@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Time Tracker">
+<title>My Time Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4ff; max-width: 480px; margin: 0 auto; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1a2980, #26d0ce); color: #fff; padding: 50px 20px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .header-title { font-size: 18px; font-weight: 800; }
+  .header-sub { font-size: 11px; opacity: 0.75; margin-top: 2px; }
+  .header-time { font-size: 22px; font-weight: 900; text-align: right; }
+  .header-date { font-size: 10px; opacity: 0.75; text-align: right; margin-top: 2px; }
+  .tabs { display: flex; background: #fff; border-bottom: 2px solid #e8edf8; position: sticky; top: 0; z-index: 10; }
+  .tab { flex: 1; padding: 12px 4px; text-align: center; font-size: 11px; font-weight: 700; color: #8a9bb0; border-bottom: 3px solid transparent; cursor: pointer; }
+  .tab.active { color: #1a2980; border-bottom-color: #1a2980; }
+  .body { padding: 14px; }
+  .card { background: #fff; border-radius: 14px; box-shadow: 0 2px 14px rgba(26,41,128,0.07); padding: 16px; margin-bottom: 12px; }
+  .sec-title { font-size: 11px; font-weight: 800; color: #1a2980; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .label { font-size: 12px; font-weight: 700; color: #4a5568; margin-bottom: 6px; display: block; }
+  input[type=date], input[type=time], input[type=number], input[type=text], select {
+    width: 100%; padding: 11px 12px; border-radius: 9px; border: 1.5px solid #e0e6ef;
+    font-size: 14px; outline: none; margin-bottom: 10px; background: #f8faff;
+    -webkit-appearance: none; appearance: none; color: #2d3748;
+  }
+  .btn-row { display: flex; gap: 10px; }
+  .btn { flex: 1; padding: 13px; border-radius: 10px; border: none; font-weight: 800; font-size: 14px; cursor: pointer; color: #fff; }
+  .btn-green { background: #27ae60; }
+  .btn-red { background: #e74c3c; }
+  .btn-blue { background: #1a2980; }
+  .btn-purple { background: #6c3483; }
+  .btn-gray { background: #bbb; }
+  .btn-full { width: 100%; padding: 13px; border-radius: 10px; border: none; font-weight: 800; font-size: 14px; cursor: pointer; color: #fff; margin-top: 8px; }
+  .msg { padding: 11px 14px; border-radius: 9px; margin-bottom: 10px; font-size: 13px; font-weight: 500; border: 1px solid; }
+  .msg-success { background: #e8f9f0; color: #1a7a4a; border-color: #a8e6c5; }
+  .msg-error { background: #fff0f0; color: #c0392b; border-color: #f5c6c6; }
+  .stat-box { background: linear-gradient(135deg, #1a2980, #26d0ce); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+  .stat-val { font-size: 26px; font-weight: 900; }
+  .stat-lbl { font-size: 10px; opacity: 0.8; margin-top: 2px; font-weight: 600; }
+  .earn-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .earn-card { flex: 1; border-radius: 10px; padding: 10px; text-align: center; }
+  .earn-val { font-size: 15px; font-weight: 900; color: #1a2980; }
+  .earn-lbl { font-size: 10px; color: #666; margin-top: 2px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; }
+  .badge-in { background: #e3f9ec; color: #1a7a4a; }
+  .badge-out { background: #fdecea; color: #c0392b; }
+  .status-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 13px; color: #555; }
+  .mode-toggle { display: flex; background: #fff; border-radius: 12px; padding: 4px; margin-bottom: 12px; box-shadow: 0 2px 14px rgba(26,41,128,0.07); }
+  .mode-btn { flex: 1; padding: 10px; border-radius: 9px; text-align: center; font-size: 13px; font-weight: 700; color: #8a9bb0; cursor: pointer; border: none; background: transparent; }
+  .mode-btn.active { background: #1a2980; color: #fff; }
+  .time-row { display: flex; align-items: center; gap: 8px; }
+  .time-block { flex: 1; }
+  .time-sep { font-size: 20px; color: #1a2980; font-weight: 900; margin-top: 10px; }
+  .pair-header { display: flex; margin-bottom: 6px; }
+  .pair-head { flex: 1; text-align: center; font-size: 10px; font-weight: 700; }
+  .pair-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid #f3f4f8; }
+  .pair-cell { flex: 1; text-align: center; font-size: 12px; }
+  .delete-btn { width: 30px; text-align: center; cursor: pointer; font-size: 16px; background: none; border: none; }
+  .day-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f3f4f8; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: 10px; border-top: 2px solid #e8edf8; }
+  .month-nav { display: flex; align-items: center; justify-content: space-between; }
+  .month-arrow { background: none; border: none; font-size: 28px; color: #1a2980; font-weight: 800; cursor: pointer; padding: 4px 10px; }
+  .month-label { font-size: 16px; font-weight: 800; color: #2d3748; }
+  .hint { font-size: 11px; color: #888; margin-bottom: 10px; margin-top: -6px; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .currency-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 9px; border: 1.5px solid #e0e6ef; margin-bottom: 8px; background: #f8faff; cursor: pointer; }
+  .currency-option.selected { border-color: #1a2980; background: #f0f4ff; font-weight: 700; color: #1a2980; }
+  .saved-msg { background: #e8f9f0; border-radius: 9px; padding: 12px; margin-bottom: 12px; border: 1px solid #a8e6c5; color: #1a7a4a; font-weight: 600; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="header-title">⏱ My Time Tracker</div>
+    <div class="header-sub" id="userName">Personal Work Hours Log</div>
+  </div>
+  <div>
+    <div class="header-time" id="clockDisplay">00:00:00</div>
+    <div class="header-date" id="dateDisplay"></div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('clock')">🕐 Clock</div>
+  <div class="tab" onclick="showTab('daily')">📅 Daily</div>
+  <div class="tab" onclick="showTab('monthly')">📆 Monthly</div>
+  <div class="tab" onclick="showTab('settings')">⚙️ Settings</div>
+</div>
+
+<!-- CLOCK TAB -->
+<div id="tab-clock" class="screen active">
+  <div class="body">
+    <div id="clockMsg"></div>
+    <div class="card">
+      <div class="sec-title">Select Date</div>
+      <input type="date" id="clockDate" onchange="onClockDateChange()">
+      <div class="status-row">
+        Status: <span id="clockStatus" class="badge badge-out">○ CLOCKED OUT</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-green" id="btnIn" onclick="handleLiveClock('in')">✅ Clock In</button>
+        <button class="btn btn-red" id="btnOut" onclick="handleLiveClock('out')">🔴 Clock Out</button>
+      </div>
+    </div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeLive" onclick="setMode('live')">🕐 Live Clock</button>
+      <button class="mode-btn" id="modeManual" onclick="setMode('manual')">✏️ Manual Entry</button>
+    </div>
+
+    <div id="manualCard" class="card" style="display:none">
+      <div class="sec-title">Manual Time Entry</div>
+      <p class="hint">Pick times using the clock or type in HH:MM</p>
+      <div class="time-row">
+        <div class="time-block">
+          <label class="label">🟢 Clock In</label>
+          <input type="time" id="manualIn">
+        </div>
+        <div class="time-sep">→</div>
+        <div class="time-block">
+          <label class="label">🔴 Clock Out</label>
+          <input type="time" id="manualOut">
+        </div>
+      </div>
+      <button class="btn-full btn-blue" onclick="handleManualAdd()">➕ Add Session</button>
+    </div>
+
+    <div id="dayTotalBox" style="display:none">
+      <div class="stat-box">
+        <div>
+          <div class="stat-val" id="dayTotalVal">0h 00m</div>
+          <div class="stat-lbl" id="dayTotalLbl">Total worked</div>
+        </div>
+        <div style="font-size:32px">⏳</div>
+      </div>
+      <div class="earn-row" id="clockEarnRow"></div>
+    </div>
+
+    <div id="sessionsCard" class="card" style="display:none">
+      <div class="sec-title" id="sessionsTitle">SESSIONS</div>
+      <div class="pair-header">
+        <div class="pair-head" style="color:#27ae60">IN</div>
+        <div class="pair-head" style="color:#e74c3c">OUT</div>
+        <div class="pair-head" style="color:#1a2980">DURATION</div>
+        <div style="width:30px"></div>
+      </div>
+      <div id="sessionsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY TAB -->
+<div id="tab-daily" class="screen">
+  <div class="body">
+    <div class="card">
+      <div class="sec-title">Select Date</div>
+      <input type="date" id="dailyDate" onchange="renderDaily()">
+    </div>
+    <div class="stat-box">
+      <div>
+        <div class="stat-val" id="dailyTotal">0h 00m</div>
+        <div class="stat-lbl">Total hours worked</div>
+      </div>
+      <div style="font-size:32px">📊</div>
+    </div>
+    <div class="earn-row" id="dailyEarnRow"></div>
+    <div id="dailySessions" class="card" style="display:none">
+      <div class="sec-title">Sessions Breakdown</div>
+      <div class="pair-header">
+        <div class="pair-head" style="color:#27ae60">IN</div>
+        <div class="pair-head" style="color:#e74c3c">OUT</div>
+        <div class="pair-head" style="color:#1a2980">DURATION</div>
+      </div>
+      <div id="dailySessionsList"></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Share Timesheet</div>
+      <button class="btn-full btn-purple" onclick="shareDaily()">📤 Share via WhatsApp / Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY TAB -->
+<div id="tab-monthly" class="screen">
+  <div class="body">
+    <div class="card">
+      <div class="sec-title">Select Month</div>
+      <div class="month-nav">
+        <button class="month-arrow" onclick="changeMonth(-1)">‹</button>
+        <span class="month-label" id="monthLabel"></span>
+        <button class="month-arrow" onclick="changeMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="stat-box">
+      <div>
+        <div class="stat-val" id="monthTotal">0h 00m</div>
+        <div class="stat-lbl" id="monthTotalLbl">Total hours</div>
+      </div>
+      <div style="font-size:32px">🗓</div>
+    </div>
+    <div class="earn-row" id="monthEarnRow"></div>
+    <div id="monthDayList" class="card"></div>
+    <div class="card">
+      <div class="sec-title">Share Timesheet</div>
+      <button class="btn-full btn-purple" onclick="shareMonthly()">📤 Share via WhatsApp / Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS TAB -->
+<div id="tab-settings" class="screen">
+  <div class="body">
+    <div id="settingsSavedMsg" style="display:none" class="saved-msg">✅ Settings saved successfully!</div>
+    <div class="card">
+      <div class="sec-title">Personal Info</div>
+      <label class="label">Your Name</label>
+      <input type="text" id="settingName" placeholder="e.g. John Smith">
+    </div>
+    <div class="card">
+      <div class="sec-title">Currency</div>
+      <div class="currency-option selected" id="cur-GBP" onclick="selectCurrency('GBP')"><span>£ GBP — British Pound</span><span id="chk-GBP">✓</span></div>
+      <div class="currency-option" id="cur-USD" onclick="selectCurrency('USD')"><span>$ USD — US Dollar</span><span id="chk-USD" style="display:none">✓</span></div>
+      <div class="currency-option" id="cur-EUR" onclick="selectCurrency('EUR')"><span>€ EUR — Euro</span><span id="chk-EUR" style="display:none">✓</span></div>
+      <div class="currency-option" id="cur-INR" onclick="selectCurrency('INR')"><span>₹ INR — Indian Rupee</span><span id="chk-INR" style="display:none">✓</span></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Pay Settings</div>
+      <label class="label">Hourly Rate</label>
+      <input type="number" id="settingRate" placeholder="e.g. 15.00" step="0.01">
+      <label class="label">Overtime Threshold (hours/day)</label>
+      <input type="number" id="settingOT" placeholder="e.g. 8">
+      <p class="hint">Hours beyond this are paid at 1.5× rate</p>
+    </div>
+    <button class="btn-full btn-blue" onclick="saveSettings()">💾 Save Settings</button>
+    <p style="text-align:center;color:#bbb;font-size:11px;margin-top:16px">My Time Tracker v1.0</p>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'ptt_v3_records';
+const SETTINGS_KEY = 'ptt_v3_settings';
+const BREAK_ALERT_MS = 6 * 3600000;
+
+let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{"hourlyRate":"","currency":"GBP","overtimeThreshold":8,"name":""}');
+let currentMode = 'live';
+let monthFilter = '';
+let breakAlertShown = false;
+
+function pad(n) { return String(n).padStart(2, '0'); }
+function fmtDate(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function fmtTimeShort(d) { return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function msToHHMM(ms) {
+  if (!ms || ms <= 0) return '0h 00m';
+  return `${Math.floor(ms/3600000)}h ${pad(Math.floor((ms%3600000)/60000))}m`;
+}
+function displayDate(s) {
+  if (!s) return '';
+  const [y,m,d] = s.split('-');
+  return new Date(+y,+m-1,+d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+function getMonthLabel(ym) {
+  const [y,m] = ym.split('-');
+  return new Date(+y,+m-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+}
+function currSym() { return {GBP:'£',USD:'$',EUR:'€',INR:'₹'}[settings.currency]||'£'; }
+
+function saveRecords() { localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }
+
+function getStatusForDate(date) {
+  const dr = records.filter(r => r.date === date);
+  return dr.length ? dr[dr.length-1].type : 'out';
+}
+
+function computeDayTotal(date) {
+  const dr = records.filter(r => r.date === date).sort((a,b) => a.ts > b.ts ? 1 : -1);
+  let total = 0, lastIn = null;
+  for (const r of dr) {
+    if (r.type === 'in') lastIn = r.ts;
+    else if (r.type === 'out' && lastIn) { total += new Date(r.ts) - new Date(lastIn); lastIn = null; }
+  }
+  if (lastIn) total += new Date() - new Date(lastIn);
+  return total;
+}
+
+function getDayPairs(date) {
+  const dr = records.filter(r => r.date === date).sort((a,b) => a.ts > b.ts ? 1 : -1);
+  const pairs = []; let lastIn = null;
+  for (const r of dr) {
+    if (r.type === 'in') lastIn = r;
+    else if (r.type === 'out') { pairs.push({in: lastIn, out: r}); lastIn = null; }
+  }
+  if (lastIn) pairs.push({in: lastIn, out: null});
+  return pairs;
+}
+
+function calcEarnings(ms) {
+  const rate = parseFloat(settings.hourlyRate);
+  if (!rate || ms <= 0) return null;
+  const hours = ms / 3600000;
+  const threshold = settings.overtimeThreshold || 8;
+  const regH = Math.min(hours, threshold);
+  const otH = Math.max(0, hours - threshold);
+  return { regH, otH, regPay: regH*rate, otPay: otH*rate*1.5, total: regH*rate + otH*rate*1.5 };
+}
+
+function earnHTML(earn) {
+  if (!earn) return '';
+  const s = currSym();
+  return `
+    <div class="earn-card" style="background:#f0f9ff"><div class="earn-val">${s}${earn.regPay.toFixed(2)}</div><div class="earn-lbl">Regular</div></div>
+    <div class="earn-card" style="background:#fff8f0"><div class="earn-val">${s}${earn.otPay.toFixed(2)}</div><div class="earn-lbl">Overtime</div></div>
+    <div class="earn-card" style="background:#f0fff4"><div class="earn-val" style="color:#1a7a4a">${s}${earn.total.toFixed(2)}</div><div class="earn-lbl">Total</div></div>`;
+}
+
+// Clock tab
+function initClock() {
+  const today = fmtDate(new Date());
+  document.getElementById('clockDate').value = today;
+  renderClockTab();
+}
+
+function onClockDateChange() { renderClockTab(); }
+
+function renderClockTab() {
+  const date = document.getElementById('clockDate').value;
+  const status = getStatusForDate(date);
+  const statusEl = document.getElementById('clockStatus');
+  statusEl.textContent = status === 'in' ? '● CLOCKED IN' : '○ CLOCKED OUT';
+  statusEl.className = `badge ${status === 'in' ? 'badge-in' : 'badge-out'}`;
+  document.getElementById('btnIn').className = `btn ${status === 'in' ? 'btn-gray' : 'btn-green'}`;
+  document.getElementById('btnOut').className = `btn ${status === 'out' ? 'btn-gray' : 'btn-red'}`;
+  document.getElementById('btnIn').disabled = status === 'in';
+  document.getElementById('btnOut').disabled = status === 'out';
+
+  const ms = computeDayTotal(date);
+  const earn = calcEarnings(ms);
+  if (ms > 0) {
+    document.getElementById('dayTotalBox').style.display = 'block';
+    document.getElementById('dayTotalVal').textContent = msToHHMM(ms);
+    document.getElementById('dayTotalLbl').textContent = `Total worked — ${displayDate(date)}`;
+    document.getElementById('clockEarnRow').innerHTML = earnHTML(earn);
+  } else {
+    document.getElementById('dayTotalBox').style.display = 'none';
+  }
+
+  const pairs = getDayPairs(date);
+  if (pairs.length) {
+    document.getElementById('sessionsCard').style.display = 'block';
+    document.getElementById('sessionsTitle').textContent = `SESSIONS — ${displayDate(date)}`;
+    document.getElementById('sessionsList').innerHTML = pairs.map((p, i) => {
+      const dur = p.out ? new Date(p.out.ts) - new Date(p.in.ts) : new Date() - new Date(p.in.ts);
+      return `<div class="pair-row">
+        <div class="pair-cell" style="color:#27ae60">${p.in.time}</div>
+        <div class="pair-cell" style="color:${p.out?'#e74c3c':'#aaa'}">${p.out ? p.out.time : 'active'}</div>
+        <div class="pair-cell" style="color:#1a2980;font-weight:700">${msToHHMM(dur)}</div>
+        <button class="delete-btn" onclick="deletePair(${i})">🗑</button>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('sessionsCard').style.display = 'none';
+  }
+}
+
+function handleLiveClock(type) {
+  const date = document.getElementById('clockDate').value;
+  const status = getStatusForDate(date);
+  if (type === 'in' && status === 'in') { showMsg('clockMsg', 'error', 'Already clocked in. Please clock out first.'); return; }
+  if (type === 'out' && status === 'out') { showMsg('clockMsg', 'error', "You haven't clocked in yet."); return; }
+  const ts = new Date();
+  records.push({ id: Date.now(), date, type, time: fmtTimeShort(ts), ts: ts.toISOString() });
+  saveRecords();
+  showMsg('clockMsg', 'success', `${type === 'in' ? '✅ Clocked In' : '🔴 Clocked Out'} at ${fmtTimeShort(ts)}`);
+  renderClockTab();
+}
+
+function handleManualAdd() {
+  const date = document.getElementById('clockDate').value;
+  const inVal = document.getElementById('manualIn').value;
+  const outVal = document.getElementById('manualOut').value;
+  if (!inVal && !outVal) { showMsg('clockMsg', 'error', 'Please enter at least a Clock In time.'); return; }
+  if (inVal && outVal && outVal <= inVal) { showMsg('clockMsg', 'error', 'Clock Out must be after Clock In.'); return; }
+  if (inVal) {
+    const ts = new Date(`${date}T${inVal}:00`);
+    records.push({ id: Date.now(), date, type: 'in', time: inVal, ts: ts.toISOString() });
+  }
+  if (outVal) {
+    const ts = new Date(`${date}T${outVal}:00`);
+    records.push({ id: Date.now()+1, date, type: 'out', time: outVal, ts: ts.toISOString() });
+  }
+  saveRecords();
+  document.getElementById('manualIn').value = '';
+  document.getElementById('manualOut').value = '';
+  showMsg('clockMsg', 'success', `✅ Session added: ${inVal||'?'} → ${outVal||'open'}`);
+  renderClockTab();
+}
+
+function deletePair(index) {
+  if (!confirm('Delete this session?')) return;
+  const date = document.getElementById('clockDate').value;
+  const pairs = getDayPairs(date);
+  const pair = pairs[index];
+  const ids = [pair.in.id, pair.out?.id].filter(Boolean);
+  records = records.filter(r => !ids.includes(r.id));
+  saveRecords();
+  showMsg('clockMsg', 'success', 'Session deleted.');
+  renderClockTab();
+}
+
+function setMode(m) {
+  currentMode = m;
+  document.getElementById('modeLive').className = `mode-btn${m==='live'?' active':''}`;
+  document.getElementById('modeManual').className = `mode-btn${m==='manual'?' active':''}`;
+  document.getElementById('manualCard').style.display = m === 'manual' ? 'block' : 'none';
+}
+
+// Daily tab
+function renderDaily() {
+  const date = document.getElementById('dailyDate').value;
+  const ms = computeDayTotal(date);
+  const earn = calcEarnings(ms);
+  document.getElementById('dailyTotal').textContent = msToHHMM(ms);
+  document.getElementById('dailyEarnRow').innerHTML = earnHTML(earn);
+  const pairs = getDayPairs(date);
+  if (pairs.length) {
+    document.getElementById('dailySessions').style.display = 'block';
+    document.getElementById('dailySessionsList').innerHTML = pairs.map(p => {
+      const dur = p.out ? new Date(p.out.ts) - new Date(p.in.ts) : 0;
+      return `<div class="pair-row">
+        <div class="pair-cell" style="color:#27ae60">${p.in.time}</div>
+        <div class="pair-cell" style="color:${p.out?'#e74c3c':'#aaa'}">${p.out?p.out.time:'active'}</div>
+        <div class="pair-cell" style="color:#1a2980;font-weight:700">${msToHHMM(dur)}</div>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('dailySessions').style.display = 'none';
+  }
+}
+
+// Monthly tab
+function renderMonthly() {
+  document.getElementById('monthLabel').textContent = getMonthLabel(monthFilter);
+  document.getElementById('monthTotalLbl').textContent = `Total hours — ${getMonthLabel(monthFilter)}`;
+  const days = [...new Set(records.filter(r => r.date.startsWith(monthFilter)).map(r => r.date))].sort();
+  let total = 0;
+  const rows = days.map(date => {
+    const ms = computeDayTotal(date);
+    total += ms;
+    const earn = calcEarnings(ms);
+    const isOT = earn && earn.otH > 0;
+    return `<div class="day-row">
+      <div>
+        <div style="font-weight:600;font-size:13px;color:#2d3748">${displayDate(date)}</div>
+        <div style="font-size:11px;color:#aaa">${getDayPairs(date).length} session(s)${isOT?' 🔶 OT':''}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800;color:#1a2980;font-size:14px">${msToHHMM(ms)}</div>
+        ${earn?`<div style="font-size:11px;color:#27ae60;font-weight:700">${currSym()}${earn.total.toFixed(2)}</div>`:''}
+      </div>
+    </div>`;
+  });
+  const monthEarn = calcEarnings(total);
+  document.getElementById('monthTotal').textContent = msToHHMM(total);
+  document.getElementById('monthEarnRow').innerHTML = earnHTML(monthEarn);
+  document.getElementById('monthDayList').innerHTML = days.length
+    ? `<div class="sec-title">DAY-BY-DAY BREAKDOWN</div>${rows.join('')}
+       <div class="total-row">
+         <span style="font-weight:800;font-size:14px;color:#1a2980">TOTAL</span>
+         <div style="text-align:right">
+           <div style="font-weight:900;font-size:15px;color:#1a2980">${msToHHMM(total)}</div>
+           ${monthEarn?`<div style="font-size:12px;color:#27ae60;font-weight:700">${currSym()}${monthEarn.total.toFixed(2)}</div>`:''}
+         </div>
+       </div>`
+    : '<p style="color:#aaa;font-size:13px;text-align:center">No records for this month.</p>';
+}
+
+function changeMonth(dir) {
+  const [y, m] = monthFilter.split('-').map(Number);
+  const d = new Date(y, m - 1 + dir, 1);
+  monthFilter = `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  renderMonthly();
+}
+
+// Share
+function buildDailyText() {
+  const date = document.getElementById('dailyDate').value;
+  const ms = computeDayTotal(date);
+  const earn = calcEarnings(ms);
+  const name = settings.name ? `Employee: ${settings.name}\n` : '';
+  let text = `📋 TIMESHEET — ${displayDate(date)}\n${name}`;
+  getDayPairs(date).forEach((p,i) => {
+    const dur = p.out ? new Date(p.out.ts)-new Date(p.in.ts) : 0;
+    text += `\nSession ${i+1}: ${p.in.time} → ${p.out?p.out.time:'active'} (${msToHHMM(dur)})`;
+  });
+  text += `\n\nTotal Hours: ${msToHHMM(ms)}`;
+  if (earn) text += `\nEarnings: ${currSym()}${earn.total.toFixed(2)}`;
+  return text;
+}
+
+function buildMonthlyText() {
+  const days = [...new Set(records.filter(r => r.date.startsWith(monthFilter)).map(r => r.date))].sort();
+  let total = 0;
+  const name = settings.name ? `Employee: ${settings.name}\n` : '';
+  let text = `📋 MONTHLY TIMESHEET — ${getMonthLabel(monthFilter)}\n${name}\n`;
+  days.forEach(date => { const ms = computeDayTotal(date); total += ms; text += `\n${displayDate(date)}: ${msToHHMM(ms)}`; });
+  const earn = calcEarnings(total);
+  text += `\n\nTotal Hours: ${msToHHMM(total)}`;
+  if (earn) text += `\nTotal Earnings: ${currSym()}${earn.total.toFixed(2)}`;
+  return text;
+}
+
+function shareDaily() {
+  if (navigator.share) { navigator.share({ title: 'Daily Timesheet', text: buildDailyText() }); }
+  else { const w = window.open(`https://wa.me/?text=${encodeURIComponent(buildDailyText())}`, '_blank'); }
+}
+
+function shareMonthly() {
+  if (navigator.share) { navigator.share({ title: 'Monthly Timesheet', text: buildMonthlyText() }); }
+  else { window.open(`https://wa.me/?text=${encodeURIComponent(buildMonthlyText())}`, '_blank'); }
+}
+
+// Settings
+function loadSettings() {
+  document.getElementById('settingName').value = settings.name || '';
+  document.getElementById('settingRate').value = settings.hourlyRate || '';
+  document.getElementById('settingOT').value = settings.overtimeThreshold || 8;
+  selectCurrency(settings.currency || 'GBP');
+  if (settings.name) document.getElementById('userName').textContent = settings.name;
+}
+
+function selectCurrency(code) {
+  ['GBP','USD','EUR','INR'].forEach(c => {
+    document.getElementById(`cur-${c}`).className = `currency-option${c===code?' selected':''}`;
+    document.getElementById(`chk-${c}`).style.display = c===code?'inline':'none';
+  });
+  settings.currency = code;
+}
+
+function saveSettings() {
+  settings.name = document.getElementById('settingName').value;
+  settings.hourlyRate = document.getElementById('settingRate').value;
+  settings.overtimeThreshold = +document.getElementById('settingOT').value || 8;
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  if (settings.name) document.getElementById('userName').textContent = settings.name;
+  const msg = document.getElementById('settingsSavedMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 3000);
+}
+
+// Tab switching
+function showTab(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'daily') { document.getElementById('dailyDate').value = fmtDate(new Date()); renderDaily(); }
+  if (name === 'monthly') renderMonthly();
+  if (name === 'settings') loadSettings();
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.className = `msg msg-${type}`;
+  el.textContent = text;
+  setTimeout(() => { el.textContent = ''; el.className = ''; }, 4000);
+}
+
+// Clock display
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clockDisplay').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById('dateDisplay').textContent = displayDate(fmtDate(now));
+  // Break alert
+  const todayStatus = getStatusForDate(fmtDate(now));
+  if (todayStatus === 'in') {
+    const dr = records.filter(r => r.date === fmtDate(now)).sort((a,b) => a.ts > b.ts ? 1 : -1);
+    const last = dr[dr.length-1];
+    if (last && last.type === 'in') {
+      const ms = now - new Date(last.ts);
+      if (ms >= BREAK_ALERT_MS && !breakAlertShown) {
+        breakAlertShown = true;
+        alert('⚠️ Break Reminder: You have been working for over 6 hours continuously. Please take a break!');
+      }
+    }
+  } else { breakAlertShown = false; }
+}
+
+// Init
+const now = new Date();
+monthFilter = `${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+initClock();
+loadSettings();
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+</body>
+</html>
