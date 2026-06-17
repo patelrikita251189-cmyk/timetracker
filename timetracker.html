@@ -15,8 +15,8 @@
   .header-sub { font-size: 11px; opacity: 0.75; margin-top: 2px; }
   .header-time { font-size: 22px; font-weight: 900; text-align: right; }
   .header-date { font-size: 10px; opacity: 0.75; text-align: right; margin-top: 2px; }
-  .tabs { display: flex; background: #fff; border-bottom: 2px solid #e8edf8; position: sticky; top: 0; z-index: 10; }
-  .tab { flex: 1; padding: 12px 4px; text-align: center; font-size: 11px; font-weight: 700; color: #8a9bb0; border-bottom: 3px solid transparent; cursor: pointer; }
+  .tabs { display: flex; background: #fff; border-bottom: 2px solid #e8edf8; position: sticky; top: 0; z-index: 10; overflow-x: auto; }
+  .tab { flex: 1; padding: 11px 2px; text-align: center; font-size: 10px; font-weight: 700; color: #8a9bb0; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; min-width: 60px; }
   .tab.active { color: #1a2980; border-bottom-color: #1a2980; }
   .body { padding: 14px; }
   .card { background: #fff; border-radius: 14px; box-shadow: 0 2px 14px rgba(26,41,128,0.07); padding: 16px; margin-bottom: 12px; }
@@ -59,18 +59,26 @@
   .pair-head { flex: 1; text-align: center; font-size: 10px; font-weight: 700; }
   .pair-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid #f3f4f8; }
   .pair-cell { flex: 1; text-align: center; font-size: 12px; }
-  .delete-btn { width: 30px; text-align: center; cursor: pointer; font-size: 16px; background: none; border: none; }
+  .delete-btn { width: 30px; text-align: center; cursor: pointer; font-size: 16px; background: none; border: none; padding: 0; }
   .day-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f3f4f8; }
   .total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: 10px; border-top: 2px solid #e8edf8; }
   .month-nav { display: flex; align-items: center; justify-content: space-between; }
   .month-arrow { background: none; border: none; font-size: 28px; color: #1a2980; font-weight: 800; cursor: pointer; padding: 4px 10px; }
   .month-label { font-size: 16px; font-weight: 800; color: #2d3748; }
-  .hint { font-size: 11px; color: #888; margin-bottom: 10px; margin-top: -6px; }
+  .hint { font-size: 11px; color: #888; margin-bottom: 10px; }
   .screen { display: none; }
   .screen.active { display: block; }
   .currency-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 9px; border: 1.5px solid #e0e6ef; margin-bottom: 8px; background: #f8faff; cursor: pointer; }
   .currency-option.selected { border-color: #1a2980; background: #f0f4ff; font-weight: 700; color: #1a2980; }
   .saved-msg { background: #e8f9f0; border-radius: 9px; padding: 12px; margin-bottom: 12px; border: 1px solid #a8e6c5; color: #1a7a4a; font-weight: 600; font-size: 13px; }
+  .week-day-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f3f4f8; cursor: pointer; }
+  .week-day-row:hover { background: #f8faff; }
+  .week-sessions { background: #f8faff; border-radius: 9px; padding: 10px; margin-bottom: 6px; display: none; }
+  .week-sessions.open { display: block; }
+  .mini-pair { display: flex; gap: 6px; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #eee; align-items: center; }
+  .mini-cell { flex: 1; text-align: center; }
+  .mini-del { width: 24px; text-align: center; cursor: pointer; background: none; border: none; font-size: 13px; }
+  .no-records { color: #aaa; font-size: 13px; text-align: center; padding: 16px 0; }
 </style>
 </head>
 <body>
@@ -89,10 +97,11 @@
 
 <!-- Tabs -->
 <div class="tabs">
-  <div class="tab active" onclick="showTab('clock')">🕐 Clock</div>
-  <div class="tab" onclick="showTab('daily')">📅 Daily</div>
-  <div class="tab" onclick="showTab('monthly')">📆 Monthly</div>
-  <div class="tab" onclick="showTab('settings')">⚙️ Settings</div>
+  <div class="tab active" onclick="showTab('clock', this)">🕐 Clock</div>
+  <div class="tab" onclick="showTab('daily', this)">📅 Daily</div>
+  <div class="tab" onclick="showTab('weekly', this)">📊 Weekly</div>
+  <div class="tab" onclick="showTab('monthly', this)">📆 Monthly</div>
+  <div class="tab" onclick="showTab('settings', this)">⚙️ Settings</div>
 </div>
 
 <!-- CLOCK TAB -->
@@ -101,7 +110,7 @@
     <div id="clockMsg"></div>
     <div class="card">
       <div class="sec-title">Select Date</div>
-      <input type="date" id="clockDate" onchange="onClockDateChange()">
+      <input type="date" id="clockDate" onchange="renderClockTab()">
       <div class="status-row">
         Status: <span id="clockStatus" class="badge badge-out">○ CLOCKED OUT</span>
       </div>
@@ -178,12 +187,40 @@
         <div class="pair-head" style="color:#27ae60">IN</div>
         <div class="pair-head" style="color:#e74c3c">OUT</div>
         <div class="pair-head" style="color:#1a2980">DURATION</div>
+        <div style="width:30px"></div>
       </div>
       <div id="dailySessionsList"></div>
     </div>
     <div class="card">
       <div class="sec-title">Share Timesheet</div>
       <button class="btn-full btn-purple" onclick="shareDaily()">📤 Share via WhatsApp / Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEEKLY TAB -->
+<div id="tab-weekly" class="screen">
+  <div class="body">
+    <div class="card">
+      <div class="sec-title">Select Week</div>
+      <div class="month-nav">
+        <button class="month-arrow" onclick="changeWeek(-1)">‹</button>
+        <span class="month-label" id="weekLabel"></span>
+        <button class="month-arrow" onclick="changeWeek(1)">›</button>
+      </div>
+    </div>
+    <div class="stat-box">
+      <div>
+        <div class="stat-val" id="weekTotal">0h 00m</div>
+        <div class="stat-lbl" id="weekTotalLbl">Total hours this week</div>
+      </div>
+      <div style="font-size:32px">📊</div>
+    </div>
+    <div class="earn-row" id="weekEarnRow"></div>
+    <div id="weekDayList" class="card"></div>
+    <div class="card">
+      <div class="sec-title">Share Weekly Timesheet</div>
+      <button class="btn-full btn-purple" onclick="shareWeekly()">📤 Share via WhatsApp / Email</button>
     </div>
   </div>
 </div>
@@ -240,7 +277,7 @@
       <p class="hint">Hours beyond this are paid at 1.5× rate</p>
     </div>
     <button class="btn-full btn-blue" onclick="saveSettings()">💾 Save Settings</button>
-    <p style="text-align:center;color:#bbb;font-size:11px;margin-top:16px">My Time Tracker v1.0</p>
+    <p style="text-align:center;color:#bbb;font-size:11px;margin-top:16px">My Time Tracker v1.1</p>
   </div>
 </div>
 
@@ -253,6 +290,7 @@ let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{"hourlyRate":"","currency":"GBP","overtimeThreshold":8,"name":""}');
 let currentMode = 'live';
 let monthFilter = '';
+let weekStart = null;
 let breakAlertShown = false;
 
 function pad(n) { return String(n).padStart(2, '0'); }
@@ -267,13 +305,43 @@ function displayDate(s) {
   const [y,m,d] = s.split('-');
   return new Date(+y,+m-1,+d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 }
+function shortDate(s) {
+  if (!s) return '';
+  const [y,m,d] = s.split('-');
+  return new Date(+y,+m-1,+d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
 function getMonthLabel(ym) {
   const [y,m] = ym.split('-');
   return new Date(+y,+m-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
 }
 function currSym() { return {GBP:'£',USD:'$',EUR:'€',INR:'₹'}[settings.currency]||'£'; }
-
 function saveRecords() { localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }
+
+// Get Monday of the week containing date d
+function getMonday(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+  dt.setDate(diff);
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+
+function getWeekDates(monday) {
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    dates.push(fmtDate(d));
+  }
+  return dates;
+}
+
+function getWeekLabel(monday) {
+  const sunday = new Date(monday);
+  sunday.setDate(sunday.getDate() + 6);
+  return `${monday.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${sunday.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`;
+}
 
 function getStatusForDate(date) {
   const dr = records.filter(r => r.date === date);
@@ -321,14 +389,11 @@ function earnHTML(earn) {
     <div class="earn-card" style="background:#f0fff4"><div class="earn-val" style="color:#1a7a4a">${s}${earn.total.toFixed(2)}</div><div class="earn-lbl">Total</div></div>`;
 }
 
-// Clock tab
+// ===== CLOCK TAB =====
 function initClock() {
-  const today = fmtDate(new Date());
-  document.getElementById('clockDate').value = today;
+  document.getElementById('clockDate').value = fmtDate(new Date());
   renderClockTab();
 }
-
-function onClockDateChange() { renderClockTab(); }
 
 function renderClockTab() {
   const date = document.getElementById('clockDate').value;
@@ -340,7 +405,6 @@ function renderClockTab() {
   document.getElementById('btnOut').className = `btn ${status === 'out' ? 'btn-gray' : 'btn-red'}`;
   document.getElementById('btnIn').disabled = status === 'in';
   document.getElementById('btnOut').disabled = status === 'out';
-
   const ms = computeDayTotal(date);
   const earn = calcEarnings(ms);
   if (ms > 0) {
@@ -351,23 +415,25 @@ function renderClockTab() {
   } else {
     document.getElementById('dayTotalBox').style.display = 'none';
   }
-
+  renderSessionsList('sessionsList', date, true);
   const pairs = getDayPairs(date);
-  if (pairs.length) {
-    document.getElementById('sessionsCard').style.display = 'block';
-    document.getElementById('sessionsTitle').textContent = `SESSIONS — ${displayDate(date)}`;
-    document.getElementById('sessionsList').innerHTML = pairs.map((p, i) => {
-      const dur = p.out ? new Date(p.out.ts) - new Date(p.in.ts) : new Date() - new Date(p.in.ts);
-      return `<div class="pair-row">
-        <div class="pair-cell" style="color:#27ae60">${p.in.time}</div>
-        <div class="pair-cell" style="color:${p.out?'#e74c3c':'#aaa'}">${p.out ? p.out.time : 'active'}</div>
-        <div class="pair-cell" style="color:#1a2980;font-weight:700">${msToHHMM(dur)}</div>
-        <button class="delete-btn" onclick="deletePair(${i})">🗑</button>
-      </div>`;
-    }).join('');
-  } else {
-    document.getElementById('sessionsCard').style.display = 'none';
-  }
+  document.getElementById('sessionsCard').style.display = pairs.length ? 'block' : 'none';
+  if (pairs.length) document.getElementById('sessionsTitle').textContent = `SESSIONS — ${displayDate(date)}`;
+}
+
+function renderSessionsList(containerId, date, showDelete) {
+  const pairs = getDayPairs(date);
+  if (!pairs.length) { document.getElementById(containerId).innerHTML = ''; return; }
+  document.getElementById(containerId).innerHTML = pairs.map((p, i) => {
+    const dur = p.out ? new Date(p.out.ts) - new Date(p.in.ts) : new Date() - new Date(p.in.ts);
+    const delBtn = showDelete ? `<button class="delete-btn" onclick="deletePair('${date}',${i},'${containerId}')" title="Delete session">🗑</button>` : '';
+    return `<div class="pair-row">
+      <div class="pair-cell" style="color:#27ae60;font-weight:700">${p.in.time}</div>
+      <div class="pair-cell" style="color:${p.out?'#e74c3c':'#aaa'};font-weight:700">${p.out ? p.out.time : 'active'}</div>
+      <div class="pair-cell" style="color:#1a2980;font-weight:700">${msToHHMM(dur)}</div>
+      ${delBtn}
+    </div>`;
+  }).join('');
 }
 
 function handleLiveClock(type) {
@@ -388,14 +454,8 @@ function handleManualAdd() {
   const outVal = document.getElementById('manualOut').value;
   if (!inVal && !outVal) { showMsg('clockMsg', 'error', 'Please enter at least a Clock In time.'); return; }
   if (inVal && outVal && outVal <= inVal) { showMsg('clockMsg', 'error', 'Clock Out must be after Clock In.'); return; }
-  if (inVal) {
-    const ts = new Date(`${date}T${inVal}:00`);
-    records.push({ id: Date.now(), date, type: 'in', time: inVal, ts: ts.toISOString() });
-  }
-  if (outVal) {
-    const ts = new Date(`${date}T${outVal}:00`);
-    records.push({ id: Date.now()+1, date, type: 'out', time: outVal, ts: ts.toISOString() });
-  }
+  if (inVal) { const ts = new Date(`${date}T${inVal}:00`); records.push({ id: Date.now(), date, type: 'in', time: inVal, ts: ts.toISOString() }); }
+  if (outVal) { const ts = new Date(`${date}T${outVal}:00`); records.push({ id: Date.now()+1, date, type: 'out', time: outVal, ts: ts.toISOString() }); }
   saveRecords();
   document.getElementById('manualIn').value = '';
   document.getElementById('manualOut').value = '';
@@ -403,16 +463,17 @@ function handleManualAdd() {
   renderClockTab();
 }
 
-function deletePair(index) {
-  if (!confirm('Delete this session?')) return;
-  const date = document.getElementById('clockDate').value;
+function deletePair(date, index, containerId) {
+  if (!confirm('Delete this session? This cannot be undone.')) return;
   const pairs = getDayPairs(date);
   const pair = pairs[index];
   const ids = [pair.in.id, pair.out?.id].filter(Boolean);
   records = records.filter(r => !ids.includes(r.id));
   saveRecords();
-  showMsg('clockMsg', 'success', 'Session deleted.');
-  renderClockTab();
+  // Refresh whichever tab called this
+  if (containerId === 'sessionsList') { renderClockTab(); showMsg('clockMsg', 'success', '🗑 Session deleted successfully.'); }
+  else if (containerId === 'dailySessionsList') { renderDaily(); }
+  else if (containerId.startsWith('week-')) { renderWeekly(); }
 }
 
 function setMode(m) {
@@ -422,7 +483,7 @@ function setMode(m) {
   document.getElementById('manualCard').style.display = m === 'manual' ? 'block' : 'none';
 }
 
-// Daily tab
+// ===== DAILY TAB =====
 function renderDaily() {
   const date = document.getElementById('dailyDate').value;
   const ms = computeDayTotal(date);
@@ -432,20 +493,100 @@ function renderDaily() {
   const pairs = getDayPairs(date);
   if (pairs.length) {
     document.getElementById('dailySessions').style.display = 'block';
-    document.getElementById('dailySessionsList').innerHTML = pairs.map(p => {
-      const dur = p.out ? new Date(p.out.ts) - new Date(p.in.ts) : 0;
-      return `<div class="pair-row">
-        <div class="pair-cell" style="color:#27ae60">${p.in.time}</div>
-        <div class="pair-cell" style="color:${p.out?'#e74c3c':'#aaa'}">${p.out?p.out.time:'active'}</div>
-        <div class="pair-cell" style="color:#1a2980;font-weight:700">${msToHHMM(dur)}</div>
-      </div>`;
-    }).join('');
+    renderSessionsList('dailySessionsList', date, true);
   } else {
     document.getElementById('dailySessions').style.display = 'none';
+    document.getElementById('dailySessionsList').innerHTML = '<div class="no-records">No records for this date.</div>';
   }
 }
 
-// Monthly tab
+// ===== WEEKLY TAB =====
+function initWeekly() {
+  weekStart = getMonday(new Date());
+  renderWeekly();
+}
+
+function changeWeek(dir) {
+  weekStart.setDate(weekStart.getDate() + dir * 7);
+  renderWeekly();
+}
+
+function renderWeekly() {
+  const dates = getWeekDates(weekStart);
+  document.getElementById('weekLabel').textContent = getWeekLabel(weekStart);
+  let weekTotal = 0;
+  const rows = dates.map(date => {
+    const ms = computeDayTotal(date);
+    weekTotal += ms;
+    const earn = calcEarnings(ms);
+    const pairs = getDayPairs(date);
+    const hasRecords = pairs.length > 0;
+    const pairsHTML = pairs.map((p, i) => {
+      const dur = p.out ? new Date(p.out.ts) - new Date(p.in.ts) : new Date() - new Date(p.in.ts);
+      return `<div class="mini-pair">
+        <div class="mini-cell" style="color:#27ae60;font-weight:700">${p.in.time}</div>
+        <div class="mini-cell" style="color:${p.out?'#e74c3c':'#aaa'}">${p.out?p.out.time:'active'}</div>
+        <div class="mini-cell" style="color:#1a2980;font-weight:700">${msToHHMM(dur)}</div>
+        <button class="mini-del" onclick="deleteWeekPair('${date}',${i})" title="Delete">🗑</button>
+      </div>`;
+    }).join('');
+
+    return `<div class="week-day-row" onclick="toggleWeekDay('wk-${date}')">
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#2d3748">${shortDate(date)}</div>
+          <div style="font-size:11px;color:#aaa">${hasRecords ? pairs.length+' session'+(pairs.length!==1?'s':'') : 'No records'}</div>
+        </div>
+        <div style="text-align:right;display:flex;align-items:center;gap:8px">
+          <div>
+            <div style="font-weight:800;color:${hasRecords?'#1a2980':'#ccc'};font-size:14px">${msToHHMM(ms)}</div>
+            ${earn?`<div style="font-size:11px;color:#27ae60;font-weight:700">${currSym()}${earn.total.toFixed(2)}</div>`:''}
+          </div>
+          <div style="color:#aaa;font-size:12px">${hasRecords?'▼':''}</div>
+        </div>
+      </div>
+      ${hasRecords ? `<div id="wk-${date}" class="week-sessions">
+        <div style="display:flex;gap:6px;margin-bottom:4px">
+          <div style="flex:1;text-align:center;font-size:10px;font-weight:700;color:#27ae60">IN</div>
+          <div style="flex:1;text-align:center;font-size:10px;font-weight:700;color:#e74c3c">OUT</div>
+          <div style="flex:1;text-align:center;font-size:10px;font-weight:700;color:#1a2980">DURATION</div>
+          <div style="width:24px"></div>
+        </div>
+        ${pairsHTML}
+      </div>` : ''}`;
+  }).join('');
+
+  const weekEarn = calcEarnings(weekTotal);
+  document.getElementById('weekTotal').textContent = msToHHMM(weekTotal);
+  document.getElementById('weekTotalLbl').textContent = `Total hours — ${getWeekLabel(weekStart)}`;
+  document.getElementById('weekEarnRow').innerHTML = earnHTML(weekEarn);
+  document.getElementById('weekDayList').innerHTML = `
+    <div class="sec-title">DAY-BY-DAY BREAKDOWN</div>
+    ${rows}
+    <div class="total-row">
+      <span style="font-weight:800;font-size:14px;color:#1a2980">WEEK TOTAL</span>
+      <div style="text-align:right">
+        <div style="font-weight:900;font-size:15px;color:#1a2980">${msToHHMM(weekTotal)}</div>
+        ${weekEarn?`<div style="font-size:12px;color:#27ae60;font-weight:700">${currSym()}${weekEarn.total.toFixed(2)}</div>`:''}
+      </div>
+    </div>`;
+}
+
+function toggleWeekDay(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+function deleteWeekPair(date, index) {
+  if (!confirm('Delete this session? This cannot be undone.')) return;
+  const pairs = getDayPairs(date);
+  const pair = pairs[index];
+  const ids = [pair.in.id, pair.out?.id].filter(Boolean);
+  records = records.filter(r => !ids.includes(r.id));
+  saveRecords();
+  renderWeekly();
+}
+
+// ===== MONTHLY TAB =====
 function renderMonthly() {
   document.getElementById('monthLabel').textContent = getMonthLabel(monthFilter);
   document.getElementById('monthTotalLbl').textContent = `Total hours — ${getMonthLabel(monthFilter)}`;
@@ -479,7 +620,7 @@ function renderMonthly() {
            ${monthEarn?`<div style="font-size:12px;color:#27ae60;font-weight:700">${currSym()}${monthEarn.total.toFixed(2)}</div>`:''}
          </div>
        </div>`
-    : '<p style="color:#aaa;font-size:13px;text-align:center">No records for this month.</p>';
+    : '<p class="no-records">No records for this month.</p>';
 }
 
 function changeMonth(dir) {
@@ -489,13 +630,13 @@ function changeMonth(dir) {
   renderMonthly();
 }
 
-// Share
+// ===== SHARE =====
 function buildDailyText() {
   const date = document.getElementById('dailyDate').value;
   const ms = computeDayTotal(date);
   const earn = calcEarnings(ms);
-  const name = settings.name ? `Employee: ${settings.name}\n` : '';
-  let text = `📋 TIMESHEET — ${displayDate(date)}\n${name}`;
+  const name = settings.name ? `Name: ${settings.name}\n` : '';
+  let text = `📋 DAILY TIMESHEET — ${displayDate(date)}\n${name}`;
   getDayPairs(date).forEach((p,i) => {
     const dur = p.out ? new Date(p.out.ts)-new Date(p.in.ts) : 0;
     text += `\nSession ${i+1}: ${p.in.time} → ${p.out?p.out.time:'active'} (${msToHHMM(dur)})`;
@@ -505,10 +646,25 @@ function buildDailyText() {
   return text;
 }
 
+function buildWeeklyText() {
+  const dates = getWeekDates(weekStart);
+  const name = settings.name ? `Name: ${settings.name}\n` : '';
+  let total = 0;
+  let text = `📋 WEEKLY TIMESHEET — ${getWeekLabel(weekStart)}\n${name}\n`;
+  dates.forEach(date => {
+    const ms = computeDayTotal(date);
+    if (ms > 0) { total += ms; text += `\n${shortDate(date)}: ${msToHHMM(ms)}`; }
+  });
+  const earn = calcEarnings(total);
+  text += `\n\nWeek Total: ${msToHHMM(total)}`;
+  if (earn) text += `\nTotal Earnings: ${currSym()}${earn.total.toFixed(2)}`;
+  return text;
+}
+
 function buildMonthlyText() {
   const days = [...new Set(records.filter(r => r.date.startsWith(monthFilter)).map(r => r.date))].sort();
   let total = 0;
-  const name = settings.name ? `Employee: ${settings.name}\n` : '';
+  const name = settings.name ? `Name: ${settings.name}\n` : '';
   let text = `📋 MONTHLY TIMESHEET — ${getMonthLabel(monthFilter)}\n${name}\n`;
   days.forEach(date => { const ms = computeDayTotal(date); total += ms; text += `\n${displayDate(date)}: ${msToHHMM(ms)}`; });
   const earn = calcEarnings(total);
@@ -517,17 +673,16 @@ function buildMonthlyText() {
   return text;
 }
 
-function shareDaily() {
-  if (navigator.share) { navigator.share({ title: 'Daily Timesheet', text: buildDailyText() }); }
-  else { const w = window.open(`https://wa.me/?text=${encodeURIComponent(buildDailyText())}`, '_blank'); }
+function shareDaily() { doShare('Daily Timesheet', buildDailyText()); }
+function shareWeekly() { doShare('Weekly Timesheet', buildWeeklyText()); }
+function shareMonthly() { doShare('Monthly Timesheet', buildMonthlyText()); }
+
+function doShare(title, text) {
+  if (navigator.share) { navigator.share({ title, text }); }
+  else { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); }
 }
 
-function shareMonthly() {
-  if (navigator.share) { navigator.share({ title: 'Monthly Timesheet', text: buildMonthlyText() }); }
-  else { window.open(`https://wa.me/?text=${encodeURIComponent(buildMonthlyText())}`, '_blank'); }
-}
-
-// Settings
+// ===== SETTINGS =====
 function loadSettings() {
   document.getElementById('settingName').value = settings.name || '';
   document.getElementById('settingRate').value = settings.hourlyRate || '';
@@ -555,13 +710,14 @@ function saveSettings() {
   setTimeout(() => msg.style.display = 'none', 3000);
 }
 
-// Tab switching
-function showTab(name) {
+// ===== TAB SWITCHING =====
+function showTab(name, el) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`tab-${name}`).classList.add('active');
-  event.target.classList.add('active');
+  if (el) el.classList.add('active');
   if (name === 'daily') { document.getElementById('dailyDate').value = fmtDate(new Date()); renderDaily(); }
+  if (name === 'weekly') renderWeekly();
   if (name === 'monthly') renderMonthly();
   if (name === 'settings') loadSettings();
 }
@@ -573,12 +729,11 @@ function showMsg(id, type, text) {
   setTimeout(() => { el.textContent = ''; el.className = ''; }, 4000);
 }
 
-// Clock display
+// ===== CLOCK DISPLAY =====
 function updateClock() {
   const now = new Date();
   document.getElementById('clockDisplay').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   document.getElementById('dateDisplay').textContent = displayDate(fmtDate(now));
-  // Break alert
   const todayStatus = getStatusForDate(fmtDate(now));
   if (todayStatus === 'in') {
     const dr = records.filter(r => r.date === fmtDate(now)).sort((a,b) => a.ts > b.ts ? 1 : -1);
@@ -596,6 +751,7 @@ function updateClock() {
 // Init
 const now = new Date();
 monthFilter = `${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+weekStart = getMonday(now);
 initClock();
 loadSettings();
 setInterval(updateClock, 1000);
