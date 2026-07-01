@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TimeTrack">
+<title>TimeTrack</title>
+<style>
+:root {
+  --primary: #4F46E5;
+  --primary-dark: #3730A3;
+  --primary-light: #EEF2FF;
+  --success: #10B981;
+  --success-light: #D1FAE5;
+  --danger: #EF4444;
+  --danger-light: #FEE2E2;
+  --warning: #F59E0B;
+  --warning-light: #FEF3C7;
+  --text: #1E293B;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --bg: #F1F5F9;
+  --card: #FFFFFF;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 20px rgba(79,70,229,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; background: var(--bg); max-width: 480px; margin: 0 auto; min-height: 100vh; color: var(--text); }
+
+/* LOGIN SCREEN */
+.login-screen {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 30px 24px;
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #06B6D4 100%);
+}
+.login-logo { font-size: 60px; margin-bottom: 16px; }
+.login-title { font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 8px; letter-spacing: -1px; }
+.login-sub { font-size: 15px; color: rgba(255,255,255,0.75); margin-bottom: 50px; text-align: center; line-height: 1.5; }
+.login-card { background: #fff; border-radius: 24px; padding: 28px 24px; width: 100%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.login-card-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.login-card-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+.google-btn {
+  width: 100%; padding: 14px 20px; border-radius: 12px; border: 1.5px solid var(--border);
+  background: #fff; display: flex; align-items: center; justify-content: center; gap: 12px;
+  font-size: 15px; font-weight: 700; color: var(--text); cursor: pointer;
+  transition: all 0.2s; font-family: inherit; margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.google-btn:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(79,70,229,0.15); }
+.google-btn:active { transform: scale(0.98); }
+.google-icon { width: 22px; height: 22px; }
+.login-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+.login-divider-line { flex: 1; height: 1px; background: var(--border); }
+.login-divider-text { font-size: 12px; color: var(--text-muted); }
+.login-note { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 16px; line-height: 1.5; }
+.login-loading { text-align: center; padding: 20px; }
+.login-loading-text { font-size: 14px; color: var(--text-muted); margin-top: 12px; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #06B6D4 100%);
+  padding: 52px 20px 20px; position: relative; overflow: hidden;
+}
+.header::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; background:rgba(255,255,255,0.07); border-radius:50%; }
+.header::after { content:''; position:absolute; bottom:-60px; left:-20px; width:140px; height:140px; background:rgba(255,255,255,0.05); border-radius:50%; }
+.header-inner { position:relative; z-index:1; display:flex; justify-content:space-between; align-items:flex-start; }
+.header-left { flex: 1; }
+.app-name { font-size:20px; font-weight:900; color:#fff; letter-spacing:-0.5px; }
+.app-sub { font-size:11px; color:rgba(255,255,255,0.7); margin-top:2px; }
+.user-info { display:flex; align-items:center; gap:8px; margin-top:10px; }
+.user-avatar { width:28px; height:28px; border-radius:50%; border:2px solid rgba(255,255,255,0.4); object-fit:cover; }
+.user-avatar-placeholder { width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:14px; }
+.user-name { font-size:12px; color:rgba(255,255,255,0.85); font-weight:600; }
+.signout-btn { font-size:10px; color:rgba(255,255,255,0.6); background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:3px 10px; cursor:pointer; font-family:inherit; margin-left:4px; }
+.clock-display { text-align:right; }
+.clock-time { font-size:26px; font-weight:900; color:#fff; letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+.clock-date { font-size:10px; color:rgba(255,255,255,0.7); margin-top:2px; }
+.status-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; font-size:11px; font-weight:700; margin-top:10px; }
+.status-pill.in { background:rgba(16,185,129,0.2); color:#6EE7B7; border:1px solid rgba(16,185,129,0.3); }
+.status-pill.out { background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.2); }
+.status-dot { width:7px; height:7px; border-radius:50%; }
+.status-pill.in .status-dot { background:#10B981; animation:pulse 2s infinite; }
+.status-pill.out .status-dot { background:rgba(255,255,255,0.5); }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+/* TABS */
+.tabs { display:flex; background:var(--card); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow-x:auto; }
+.tab { flex:1; padding:12px 4px; text-align:center; font-size:10px; font-weight:700; color:var(--text-muted); border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; min-width:56px; transition:all 0.2s; }
+.tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+.tab-icon { font-size:15px; display:block; margin-bottom:2px; }
+
+/* BODY */
+.body { padding:16px; padding-bottom:40px; }
+
+/* CARDS */
+.card { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:14px; border:1px solid rgba(226,232,240,0.8); }
+.card-title { font-size:11px; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+
+/* INPUTS */
+input[type=date],input[type=time],input[type=number],input[type=text],select { width:100%; padding:12px 14px; border-radius:var(--radius-sm); border:1.5px solid var(--border); font-size:14px; outline:none; margin-bottom:12px; background:var(--bg); color:var(--text); font-family:inherit; transition:border-color 0.2s; -webkit-appearance:none; appearance:none; }
+input:focus,select:focus { border-color:var(--primary); background:#fff; }
+.input-label { font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:6px; display:block; }
+
+/* BUTTONS */
+.btn-row { display:flex; gap:10px; }
+.btn { flex:1; padding:14px; border-radius:var(--radius-sm); border:none; font-weight:800; font-size:14px; cursor:pointer; color:#fff; font-family:inherit; transition:transform 0.1s,opacity 0.2s; display:flex; align-items:center; justify-content:center; gap:6px; }
+.btn:active { transform:scale(0.97); }
+.btn-primary { background:linear-gradient(135deg,var(--primary),#7C3AED); }
+.btn-success { background:linear-gradient(135deg,#059669,var(--success)); }
+.btn-danger { background:linear-gradient(135deg,#DC2626,var(--danger)); }
+.btn-purple { background:linear-gradient(135deg,#7C3AED,#A855F7); }
+.btn-gray { background:#CBD5E1; color:var(--text-muted); }
+.btn-full { width:100%; padding:14px; border-radius:var(--radius-sm); border:none; font-weight:800; font-size:14px; cursor:pointer; color:#fff; font-family:inherit; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px; }
+
+/* MODE TOGGLE */
+.mode-toggle { display:flex; background:var(--bg); border-radius:var(--radius-sm); padding:4px; margin-bottom:14px; gap:4px; border:1px solid var(--border); }
+.mode-btn { flex:1; padding:10px; border-radius:8px; text-align:center; font-size:12px; font-weight:700; color:var(--text-muted); cursor:pointer; border:none; background:transparent; font-family:inherit; transition:all 0.2s; }
+.mode-btn.active { background:var(--primary); color:#fff; box-shadow:0 2px 8px rgba(79,70,229,0.3); }
+
+/* STAT BOX */
+.stat-box { background:linear-gradient(135deg,#4F46E5,#7C3AED); border-radius:var(--radius); padding:20px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; color:#fff; box-shadow:0 8px 24px rgba(79,70,229,0.25); }
+.stat-val { font-size:32px; font-weight:900; letter-spacing:-1px; }
+.stat-lbl { font-size:11px; opacity:0.75; margin-top:4px; font-weight:600; }
+.stat-icon { font-size:40px; opacity:0.8; }
+
+/* EARN CARDS */
+.earn-row { display:flex; gap:10px; margin-bottom:14px; }
+.earn-card { flex:1; border-radius:var(--radius-sm); padding:12px 8px; text-align:center; }
+.earn-val { font-size:14px; font-weight:900; color:var(--primary); }
+.earn-lbl { font-size:10px; color:var(--text-muted); margin-top:3px; font-weight:600; }
+
+/* SESSION CARDS */
+.session-card { background:var(--bg); border-radius:var(--radius-sm); border:1.5px solid var(--border); padding:14px; margin-bottom:10px; transition:border-color 0.2s; }
+.session-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.session-num { font-size:11px; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:0.5px; background:var(--primary-light); padding:3px 10px; border-radius:20px; }
+.session-dur { font-size:14px; font-weight:900; color:var(--text); }
+.session-times { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.session-time-box { flex:1; background:#fff; border-radius:8px; padding:10px; text-align:center; border:1px solid var(--border); }
+.session-time-label { font-size:9px; font-weight:700; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px; }
+.session-time-val { font-size:18px; font-weight:900; font-variant-numeric:tabular-nums; }
+.session-arrow { font-size:18px; color:var(--text-muted); }
+.session-actions { display:flex; gap:8px; }
+.session-btn { flex:1; padding:9px; border-radius:8px; border:none; font-weight:700; font-size:12px; cursor:pointer; color:#fff; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:4px; }
+.session-btn.edit { background:linear-gradient(135deg,var(--primary),#7C3AED); }
+.session-btn.del { background:linear-gradient(135deg,#DC2626,var(--danger)); }
+.no-sessions { text-align:center; padding:24px; color:var(--text-muted); font-size:13px; }
+.no-sessions-icon { font-size:36px; margin-bottom:8px; }
+
+/* MESSAGES */
+.msg { padding:12px 14px; border-radius:var(--radius-sm); margin-bottom:12px; font-size:13px; font-weight:600; border:1px solid; display:flex; align-items:center; gap:8px; }
+.msg-success { background:var(--success-light); color:#065F46; border-color:#6EE7B7; }
+.msg-error { background:var(--danger-light); color:#991B1B; border-color:#FCA5A5; }
+
+/* EDIT MODAL */
+.modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.6); display:flex; align-items:flex-end; justify-content:center; z-index:200; backdrop-filter:blur(4px); }
+.modal-box { background:#fff; border-radius:24px 24px 0 0; padding:24px; width:100%; max-width:480px; box-sizing:border-box; }
+.modal-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+.modal-title { font-size:18px; font-weight:800; color:var(--text); margin-bottom:20px; }
+.modal-time-row { display:flex; gap:12px; margin-bottom:16px; }
+.modal-time-block { flex:1; }
+.modal-actions { display:flex; gap:10px; }
+
+/* MISC */
+.badge { display:inline-flex; align-items:center; gap:4px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
+.badge-in { background:var(--success-light); color:#065F46; }
+.badge-out { background:var(--danger-light); color:#991B1B; }
+.month-nav { display:flex; align-items:center; justify-content:space-between; }
+.month-arrow { background:var(--primary-light); border:none; width:36px; height:36px; border-radius:50%; font-size:18px; color:var(--primary); font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.month-label-text { font-size:15px; font-weight:800; color:var(--text); }
+.day-row { display:flex; justify-content:space-between; align-items:center; padding:12px 4px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; border-radius:8px; }
+.day-row:active { background:var(--bg); }
+.total-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0 0; margin-top:4px; border-top:2px solid var(--primary-light); }
+.week-day-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+.week-sessions { background:var(--bg); border-radius:var(--radius-sm); padding:12px; margin:4px 0 8px; display:none; border:1px solid var(--border); }
+.week-sessions.open { display:block; }
+.currency-option { display:flex; justify-content:space-between; align-items:center; padding:13px 14px; border-radius:var(--radius-sm); border:1.5px solid var(--border); margin-bottom:8px; background:var(--bg); cursor:pointer; font-size:14px; transition:all 0.2s; }
+.currency-option.selected { border-color:var(--primary); background:var(--primary-light); color:var(--primary); font-weight:700; }
+.screen { display:none; }
+.screen.active { display:block; }
+.hint { font-size:11px; color:var(--text-muted); margin-bottom:10px; margin-top:-8px; }
+.saved-msg { background:var(--success-light); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:14px; border:1px solid #6EE7B7; color:#065F46; font-weight:600; font-size:13px; display:flex; align-items:center; gap:8px; }
+.firebase-badge { background:linear-gradient(135deg,#FEF3C7,#FDE68A); border-radius:var(--radius-sm); padding:10px 14px; font-size:12px; color:#92400E; margin-bottom:14px; display:flex; align-items:center; gap:8px; font-weight:600; border:1px solid #FCD34D; }
+.time-sep { font-size:20px; color:var(--text-muted); margin-top:12px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-logo">⏱</div>
+  <div class="login-title">TimeTrack</div>
+  <div class="login-sub">Your personal work hours tracker.<br>Sign in to access your data securely.</div>
+  <div class="login-card">
+    <div class="login-card-title">Welcome back 👋</div>
+    <div class="login-card-sub">Sign in to continue to TimeTrack</div>
+    <div id="loginContent">
+      <button class="google-btn" onclick="signInWithGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Continue with Google
+      </button>
+      <div class="login-note">🔒 Your data is private and secure.<br>Each user has their own separate records.</div>
+    </div>
+    <div id="loginLoading" class="login-loading" style="display:none">
+      <div class="spinner"></div>
+      <div class="login-loading-text">Signing you in...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="app-name">⏱ TimeTrack</div>
+        <div class="user-info">
+          <img id="userAvatar" class="user-avatar" src="" style="display:none">
+          <div id="userAvatarPlaceholder" class="user-avatar-placeholder">👤</div>
+          <span class="user-name" id="userName">Loading...</span>
+          <button class="signout-btn" onclick="signOut()">Sign Out</button>
+        </div>
+        <div id="headerStatus" class="status-pill out">
+          <div class="status-dot"></div>
+          <span id="statusText">Not clocked in</span>
+        </div>
+      </div>
+      <div class="clock-display">
+        <div class="clock-time" id="clockDisplay">00:00:00</div>
+        <div class="clock-date" id="dateDisplay"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('clock',this)"><span class="tab-icon">🕐</span>Clock</div>
+    <div class="tab" onclick="showTab('daily',this)"><span class="tab-icon">📅</span>Daily</div>
+    <div class="tab" onclick="showTab('weekly',this)"><span class="tab-icon">📊</span>Weekly</div>
+    <div class="tab" onclick="showTab('monthly',this)"><span class="tab-icon">📆</span>Monthly</div>
+    <div class="tab" onclick="showTab('settings',this)"><span class="tab-icon">⚙️</span>Settings</div>
+  </div>
+
+  <!-- CLOCK TAB -->
+  <div id="tab-clock" class="screen active">
+    <div class="body">
+      <div class="firebase-badge">☁️ Your data is private and synced to cloud</div>
+      <div id="clockMsg"></div>
+      <div class="card">
+        <div class="card-title">📅 Select Date</div>
+        <input type="date" id="clockDate" onchange="renderClockTab()">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--text-muted)" id="selectedDateLabel"></span>
+          <span id="clockStatusBadge" class="badge badge-out">○ Clocked Out</span>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-bottom:14px">
+        <button class="btn btn-success" id="btnIn" onclick="handleLiveClock('in')">✅ Clock In</button>
+        <button class="btn btn-danger" id="btnOut" onclick="handleLiveClock('out')">🔴 Clock Out</button>
+      </div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="modeLive" onclick="setMode('live')">🕐 Live Clock</button>
+        <button class="mode-btn" id="modeManual" onclick="setMode('manual')">✏️ Manual Entry</button>
+      </div>
+      <div id="manualCard" class="card" style="display:none">
+        <div class="card-title">✏️ Add Session Manually</div>
+        <p class="hint">Works for today or any past date selected above</p>
+        <div style="display:flex;align-items:flex-end;gap:10px">
+          <div style="flex:1">
+            <label class="input-label">🟢 Clock In</label>
+            <input type="time" id="manualIn">
+          </div>
+          <div class="time-sep" style="margin-bottom:12px;padding:0 4px">→</div>
+          <div style="flex:1">
+            <label class="input-label">🔴 Clock Out</label>
+            <input type="time" id="manualOut">
+          </div>
+        </div>
+        <button class="btn-full btn-primary" onclick="handleManualAdd()">➕ Add Session</button>
+      </div>
+      <div id="dayTotalBox" style="display:none">
+        <div class="stat-box">
+          <div>
+            <div class="stat-val" id="dayTotalVal">0h 00m</div>
+            <div class="stat-lbl" id="dayTotalLbl">Hours worked</div>
+          </div>
+          <div class="stat-icon">⏳</div>
+        </div>
+        <div class="earn-row" id="clockEarnRow"></div>
+      </div>
+      <div id="sessionsCard" style="display:none">
+        <div class="card-title" id="sessionsTitle" style="margin-bottom:10px">📋 Sessions</div>
+        <div id="sessionsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY TAB -->
+  <div id="tab-daily" class="screen">
+    <div class="body">
+      <div id="dailyMsg"></div>
+      <div class="card">
+        <div class="card-title">📅 Select Date</div>
+        <input type="date" id="dailyDate" onchange="renderDaily()">
+        <div style="font-size:13px;color:var(--text-muted)" id="dailyDateLabel"></div>
+      </div>
+      <div class="stat-box">
+        <div>
+          <div class="stat-val" id="dailyTotal">0h 00m</div>
+          <div class="stat-lbl" id="dailyTotalLbl">Total hours worked</div>
+        </div>
+        <div class="stat-icon">📊</div>
+      </div>
+      <div class="earn-row" id="dailyEarnRow"></div>
+      <div id="dailySessions"></div>
+      <div class="card" style="margin-top:4px">
+        <div class="card-title">📤 Share Timesheet</div>
+        <button class="btn-full btn-purple" onclick="shareDaily()">Share via WhatsApp / Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY TAB -->
+  <div id="tab-weekly" class="screen">
+    <div class="body">
+      <div class="card">
+        <div class="card-title">📊 Select Week</div>
+        <div class="month-nav">
+          <button class="month-arrow" onclick="changeWeek(-1)">‹</button>
+          <span class="month-label-text" id="weekLabel"></span>
+          <button class="month-arrow" onclick="changeWeek(1)">›</button>
+        </div>
+      </div>
+      <div class="stat-box">
+        <div>
+          <div class="stat-val" id="weekTotal">0h 00m</div>
+          <div class="stat-lbl" id="weekTotalLbl">Total hours this week</div>
+        </div>
+        <div class="stat-icon">📊</div>
+      </div>
+      <div class="earn-row" id="weekEarnRow"></div>
+      <div id="weekDayList" class="card"></div>
+      <div class="card">
+        <div class="card-title">📤 Share Weekly Timesheet</div>
+        <button class="btn-full btn-purple" onclick="shareWeekly()">Share via WhatsApp / Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONTHLY TAB -->
+  <div id="tab-monthly" class="screen">
+    <div class="body">
+      <div class="card">
+        <div class="card-title">📆 Select Month</div>
+        <div class="month-nav">
+          <button class="month-arrow" onclick="changeMonth(-1)">‹</button>
+          <span class="month-label-text" id="monthLabel"></span>
+          <button class="month-arrow" onclick="changeMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="stat-box">
+        <div>
+          <div class="stat-val" id="monthTotal">0h 00m</div>
+          <div class="stat-lbl" id="monthTotalLbl">Total hours</div>
+        </div>
+        <div class="stat-icon">🗓</div>
+      </div>
+      <div class="earn-row" id="monthEarnRow"></div>
+      <div id="monthDayList" class="card"></div>
+      <div class="card">
+        <div class="card-title">📤 Share Monthly Timesheet</div>
+        <button class="btn-full btn-purple" onclick="shareMonthly()">Share via WhatsApp / Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div id="tab-settings" class="screen">
+    <div class="body">
+      <div id="settingsSavedMsg" style="display:none" class="saved-msg">✅ Settings saved successfully!</div>
+      <div class="firebase-badge">☁️ Your personal data is private to your account only</div>
+      <div class="card">
+        <div class="card-title">👤 Account</div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+          <img id="settingsAvatar" src="" style="width:48px;height:48px;border-radius:50%;border:2px solid var(--primary-light);display:none">
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--text)" id="settingsName">Loading...</div>
+            <div style="font-size:12px;color:var(--text-muted)" id="settingsEmail"></div>
+          </div>
+        </div>
+        <button class="btn-full" style="background:#FEE2E2;color:#991B1B;margin-top:8px" onclick="signOut()">🚪 Sign Out</button>
+      </div>
+      <div class="card">
+        <div class="card-title">💱 Currency</div>
+        <div class="currency-option selected" id="cur-GBP" onclick="selectCurrency('GBP')"><span>£ GBP — British Pound</span><span id="chk-GBP">✓</span></div>
+        <div class="currency-option" id="cur-USD" onclick="selectCurrency('USD')"><span>$ USD — US Dollar</span><span id="chk-USD" style="display:none">✓</span></div>
+        <div class="currency-option" id="cur-EUR" onclick="selectCurrency('EUR')"><span>€ EUR — Euro</span><span id="chk-EUR" style="display:none">✓</span></div>
+        <div class="currency-option" id="cur-INR" onclick="selectCurrency('INR')"><span>₹ INR — Indian Rupee</span><span id="chk-INR" style="display:none">✓</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💰 Pay Settings</div>
+        <label class="input-label">Hourly Rate</label>
+        <input type="number" id="settingRate" placeholder="e.g. 15.00" step="0.01">
+        <label class="input-label">Overtime Threshold (hours/day)</label>
+        <input type="number" id="settingOT" placeholder="e.g. 8">
+        <p class="hint">Hours beyond this per day are paid at 1.5× rate</p>
+      </div>
+      <button class="btn-full btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+      <p style="text-align:center;color:var(--text-muted);font-size:11px;margin-top:20px">TimeTrack v3.1 · Multi-User Edition</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="modal-overlay" style="display:none" onclick="closeModalOutside(event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Edit Session</div>
+    <input type="hidden" id="editInKey">
+    <input type="hidden" id="editOutKey">
+    <input type="hidden" id="editDate">
+    <div class="modal-time-row">
+      <div class="modal-time-block">
+        <label class="input-label">🟢 Clock In</label>
+        <input type="time" id="editInTime">
+      </div>
+      <div class="time-sep" style="margin-top:28px;padding:0 4px">→</div>
+      <div class="modal-time-block">
+        <label class="input-label">🔴 Clock Out</label>
+        <input type="time" id="editOutTime">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:2" onclick="saveEdit()">💾 Save Changes</button>
+      <button class="btn btn-gray" style="flex:1" onclick="document.getElementById('editModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, remove, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDgkCQZZJUVHTSyDJZmc1diYjGOLU9uRk8",
+  authDomain: "mytime-7a18e.firebaseapp.com",
+  databaseURL: "https://mytime-7a18e-default-rtdb.firebaseio.com",
+  projectId: "mytime-7a18e",
+  storageBucket: "mytime-7a18e.firebasestorage.app",
+  messagingSenderId: "236065333382",
+  appId: "1:236065333382:web:b173234e219a9589733107"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+let records = [];
+let currentUser = null;
+let settings = {};
+let monthFilter = '';
+let weekStart = null;
+let breakAlertShown = false;
+let currentTab = 'clock';
+let unsubscribeRecords = null;
+
+// ===== AUTH =====
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    updateUserUI(user);
+    loadSettings();
+    listenToRecords();
+    initClock();
+  } else {
+    currentUser = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginLoading').style.display = 'none';
+    document.getElementById('loginContent').style.display = 'block';
+    if (unsubscribeRecords) { unsubscribeRecords(); unsubscribeRecords = null; }
+  }
+});
+
+// Handle redirect result on page load (for mobile)
+getRedirectResult(auth).then((result) => {
+  if (result && result.user) {
+    // Handled by onAuthStateChanged
+  }
+}).catch((error) => {
+  console.error('Redirect error:', error);
+  document.getElementById('loginLoading').style.display = 'none';
+  document.getElementById('loginContent').style.display = 'block';
+});
+
+function updateUserUI(user) {
+  document.getElementById('userName').textContent = user.displayName || user.email;
+  document.getElementById('settingsName').textContent = user.displayName || 'User';
+  document.getElementById('settingsEmail').textContent = user.email;
+  if (user.photoURL) {
+    document.getElementById('userAvatar').src = user.photoURL;
+    document.getElementById('userAvatar').style.display = 'block';
+    document.getElementById('userAvatarPlaceholder').style.display = 'none';
+    document.getElementById('settingsAvatar').src = user.photoURL;
+    document.getElementById('settingsAvatar').style.display = 'block';
+  }
+}
+
+window.signInWithGoogle = async function() {
+  document.getElementById('loginContent').style.display = 'none';
+  document.getElementById('loginLoading').style.display = 'block';
+  try {
+    await signInWithRedirect(auth, provider);
+  } catch (error) {
+    document.getElementById('loginLoading').style.display = 'none';
+    document.getElementById('loginContent').style.display = 'block';
+    alert('Sign in failed: ' + error.message);
+  }
+};
+
+window.signOut = async function() {
+  if (confirm('Are you sure you want to sign out?')) {
+    await fbSignOut(auth);
+  }
+};
+
+// ===== FIREBASE DATA =====
+function getUserPath() { return `users/${currentUser.uid}`; }
+
+function listenToRecords() {
+  if (unsubscribeRecords) unsubscribeRecords();
+  unsubscribeRecords = onValue(ref(db, `${getUserPath()}/records`), (snapshot) => {
+    records = [];
+    if (snapshot.exists()) {
+      snapshot.forEach(child => { records.push({ firebaseKey: child.key, ...child.val() }); });
+    }
+    refreshCurrentTab();
+  }, (error) => {
+    showMsg('clockMsg', 'error', '⚠️ Connection error. Check your internet.');
+  });
+}
+
+async function addRecord(record) {
+  try { await push(ref(db, `${getUserPath()}/records`), record); }
+  catch(e) { showMsg('clockMsg','error','❌ Failed to save. Check internet.'); }
+}
+
+async function deleteRecord(key) {
+  if (!key||key==='undefined'||key==='') return;
+  try { await remove(ref(db, `${getUserPath()}/records/${key}`)); }
+  catch(e) { console.error('Delete failed', e); }
+}
+
+async function updateRecord(key, data) {
+  if (!key||key==='undefined'||key==='') return;
+  try { await update(ref(db, `${getUserPath()}/records/${key}`), data); }
+  catch(e) { console.error('Update failed', e); }
+}
+
+function loadSettings() {
+  const key = `ptt_settings_${currentUser.uid}`;
+  settings = JSON.parse(localStorage.getItem(key) || '{"hourlyRate":"","currency":"GBP","overtimeThreshold":8}');
+  applySettingsUI();
+}
+
+function saveSettingsToStorage() {
+  const key = `ptt_settings_${currentUser.uid}`;
+  localStorage.setItem(key, JSON.stringify(settings));
+}
+
+// ===== HELPERS =====
+function pad(n) { return String(n).padStart(2,'0'); }
+function fmtDate(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function fmtTimeShort(d) { return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function msToHHMM(ms) { if(!ms||ms<=0)return'0h 00m'; return`${Math.floor(ms/3600000)}h ${pad(Math.floor((ms%3600000)/60000))}m`; }
+function displayDate(s) { if(!s)return''; const[y,m,d]=s.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}); }
+function shortDate(s) { if(!s)return''; const[y,m,d]=s.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }
+function getMonthLabel(ym) { const[y,m]=ym.split('-'); return new Date(+y,+m-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'}); }
+function currSym() { return{GBP:'£',USD:'$',EUR:'€',INR:'₹'}[settings.currency]||'£'; }
+function getMonday(d) { const dt=new Date(d); const day=dt.getDay(); dt.setDate(dt.getDate()-day+(day===0?-6:1)); dt.setHours(0,0,0,0); return dt; }
+function getWeekDates(monday) { return Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(d.getDate()+i);return fmtDate(d);}); }
+function getWeekLabel(monday) { const sun=new Date(monday);sun.setDate(sun.getDate()+6);return`${monday.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${sun.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`; }
+function getStatusForDate(date) { const dr=records.filter(r=>r.date===date); return dr.length?dr[dr.length-1].type:'out'; }
+function computeDayTotal(date) {
+  const dr=records.filter(r=>r.date===date).sort((a,b)=>a.ts>b.ts?1:-1);
+  let total=0,lastIn=null;
+  for(const r of dr){if(r.type==='in')lastIn=r.ts;else if(r.type==='out'&&lastIn){total+=new Date(r.ts)-new Date(lastIn);lastIn=null;}}
+  if(lastIn)total+=new Date()-new Date(lastIn);
+  return total;
+}
+function getDayPairs(date) {
+  const dr=records.filter(r=>r.date===date).sort((a,b)=>a.ts>b.ts?1:-1);
+  const pairs=[];let lastIn=null;
+  for(const r of dr){if(r.type==='in')lastIn=r;else if(r.type==='out'){pairs.push({in:lastIn,out:r});lastIn=null;}}
+  if(lastIn)pairs.push({in:lastIn,out:null});
+  return pairs;
+}
+function calcEarnings(ms) {
+  const rate=parseFloat(settings.hourlyRate);
+  if(!rate||ms<=0)return null;
+  const hours=ms/3600000,threshold=+settings.overtimeThreshold||8;
+  const regH=Math.min(hours,threshold),otH=Math.max(0,hours-threshold);
+  return{regH,otH,regPay:regH*rate,otPay:otH*rate*1.5,total:regH*rate+otH*rate*1.5};
+}
+function earnHTML(earn) {
+  if(!earn)return'';
+  const s=currSym();
+  return`<div class="earn-card" style="background:#EEF2FF"><div class="earn-val">${s}${earn.regPay.toFixed(2)}</div><div class="earn-lbl">Regular Pay</div></div>
+    <div class="earn-card" style="background:#FEF3C7"><div class="earn-val" style="color:#B45309">${s}${earn.otPay.toFixed(2)}</div><div class="earn-lbl">Overtime Pay</div></div>
+    <div class="earn-card" style="background:#D1FAE5"><div class="earn-val" style="color:#065F46">${s}${earn.total.toFixed(2)}</div><div class="earn-lbl">Total Earned</div></div>`;
+}
+
+// ===== SESSION CARDS =====
+function renderSessionCards(pairs,containerId,msgId) {
+  const container=document.getElementById(containerId);
+  if(!container)return;
+  if(!pairs.length){container.innerHTML=`<div class="no-sessions"><div class="no-sessions-icon">📭</div>No sessions recorded.</div>`;return;}
+  container.innerHTML=pairs.map((p,i)=>{
+    const dur=p.out?new Date(p.out.ts)-new Date(p.in.ts):new Date()-new Date(p.in.ts);
+    const earn=calcEarnings(dur);
+    const inKey=p.in.firebaseKey||'';const outKey=p.out?.firebaseKey||'';
+    const date=p.in.date||'';const inTime=p.in.time||'';const outTime=p.out?.time||'';
+    return`<div class="session-card">
+      <div class="session-header">
+        <span class="session-num">Session ${i+1}</span>
+        <span class="session-dur">${msToHHMM(dur)}${earn?` · <span style="color:#059669">${currSym()}${earn.total.toFixed(2)}</span>`:''}</span>
+      </div>
+      <div class="session-times">
+        <div class="session-time-box">
+          <div class="session-time-label" style="color:#059669">🟢 Clock In</div>
+          <div class="session-time-val" style="color:#059669">${inTime}</div>
+        </div>
+        <div class="session-arrow">→</div>
+        <div class="session-time-box">
+          <div class="session-time-label" style="color:${p.out?'#DC2626':'#94A3B8'}">${p.out?'🔴 Clock Out':'⏳ Active'}</div>
+          <div class="session-time-val" style="color:${p.out?'#DC2626':'#94A3B8'}">${outTime||'--:--'}</div>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button class="session-btn edit" onclick="openEditModal('${inKey}','${outKey}','${date}','${inTime}','${outTime}')">✏️ Edit</button>
+        <button class="session-btn del" onclick="deletePairByKeys('${inKey}','${outKey}','${msgId}')">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== EDIT =====
+window.openEditModal=function(inKey,outKey,date,inTime,outTime){
+  document.getElementById('editInKey').value=inKey;
+  document.getElementById('editOutKey').value=outKey;
+  document.getElementById('editDate').value=date;
+  document.getElementById('editInTime').value=inTime;
+  document.getElementById('editOutTime').value=outTime;
+  document.getElementById('editModal').style.display='flex';
+};
+window.closeModalOutside=function(e){if(e.target===document.getElementById('editModal'))document.getElementById('editModal').style.display='none';};
+window.saveEdit=async function(){
+  const inKey=document.getElementById('editInKey').value;
+  const outKey=document.getElementById('editOutKey').value;
+  const date=document.getElementById('editDate').value;
+  const inTime=document.getElementById('editInTime').value;
+  const outTime=document.getElementById('editOutTime').value;
+  if(!inTime){alert('Please enter a Clock In time.');return;}
+  if(inTime&&outTime&&outTime<=inTime){alert('Clock Out must be after Clock In.');return;}
+  if(inKey)await updateRecord(inKey,{time:inTime,ts:new Date(`${date}T${inTime}:00`).toISOString()});
+  if(outKey&&outTime)await updateRecord(outKey,{time:outTime,ts:new Date(`${date}T${outTime}:00`).toISOString()});
+  document.getElementById('editModal').style.display='none';
+  showMsg('clockMsg','success','✅ Session updated successfully!');
+};
+window.deletePairByKeys=async function(inKey,outKey,msgId){
+  if(!confirm('Delete this session? This cannot be undone.'))return;
+  await deleteRecord(inKey);await deleteRecord(outKey);
+  if(msgId)showMsg(msgId,'success','🗑 Session deleted.');
+};
+
+// ===== CLOCK TAB =====
+function initClock(){
+  document.getElementById('clockDate').value=fmtDate(new Date());
+  const now=new Date();
+  monthFilter=`${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+  weekStart=getMonday(now);
+  renderClockTab();
+}
+function renderClockTab(){
+  const date=document.getElementById('clockDate').value;
+  if(!date)return;
+  document.getElementById('selectedDateLabel').textContent=displayDate(date);
+  const status=getStatusForDate(date);
+  const badge=document.getElementById('clockStatusBadge');
+  badge.textContent=status==='in'?'● Clocked In':'○ Clocked Out';
+  badge.className=`badge badge-${status}`;
+  document.getElementById('btnIn').className=`btn ${status==='in'?'btn-gray':'btn-success'}`;
+  document.getElementById('btnOut').className=`btn ${status==='out'?'btn-gray':'btn-danger'}`;
+  document.getElementById('btnIn').disabled=status==='in';
+  document.getElementById('btnOut').disabled=status==='out';
+  const todayStatus=getStatusForDate(fmtDate(new Date()));
+  const hp=document.getElementById('headerStatus');
+  hp.className=`status-pill ${todayStatus}`;
+  document.getElementById('statusText').textContent=todayStatus==='in'?'Currently clocked in':'Not clocked in';
+  const ms=computeDayTotal(date);const earn=calcEarnings(ms);
+  if(ms>0){
+    document.getElementById('dayTotalBox').style.display='block';
+    document.getElementById('dayTotalVal').textContent=msToHHMM(ms);
+    document.getElementById('dayTotalLbl').textContent=`Worked on ${displayDate(date)}`;
+    document.getElementById('clockEarnRow').innerHTML=earnHTML(earn);
+  } else {document.getElementById('dayTotalBox').style.display='none';}
+  const pairs=getDayPairs(date);
+  if(pairs.length){
+    document.getElementById('sessionsCard').style.display='block';
+    document.getElementById('sessionsTitle').textContent=`📋 Sessions — ${displayDate(date)}`;
+    renderSessionCards(pairs,'sessionsList','clockMsg');
+  } else {document.getElementById('sessionsCard').style.display='none';}
+}
+window.handleLiveClock=async function(type){
+  const date=document.getElementById('clockDate').value;
+  const status=getStatusForDate(date);
+  if(type==='in'&&status==='in'){showMsg('clockMsg','error','❌ Already clocked in. Please clock out first.');return;}
+  if(type==='out'&&status==='out'){showMsg('clockMsg','error',"❌ You haven't clocked in yet.");return;}
+  const ts=new Date();
+  await addRecord({date,type,time:fmtTimeShort(ts),ts:ts.toISOString()});
+  showMsg('clockMsg','success',`${type==='in'?'✅ Clocked In':'🔴 Clocked Out'} at ${fmtTimeShort(ts)} on ${displayDate(date)}`);
+};
+window.handleManualAdd=async function(){
+  const date=document.getElementById('clockDate').value;
+  const inVal=document.getElementById('manualIn').value;
+  const outVal=document.getElementById('manualOut').value;
+  if(!inVal&&!outVal){showMsg('clockMsg','error','❌ Please enter at least a Clock In time.');return;}
+  if(inVal&&outVal&&outVal<=inVal){showMsg('clockMsg','error','❌ Clock Out must be after Clock In.');return;}
+  if(inVal)await addRecord({date,type:'in',time:inVal,ts:new Date(`${date}T${inVal}:00`).toISOString()});
+  if(outVal)await addRecord({date,type:'out',time:outVal,ts:new Date(`${date}T${outVal}:00`).toISOString()});
+  document.getElementById('manualIn').value='';document.getElementById('manualOut').value='';
+  showMsg('clockMsg','success',`✅ Session added: ${inVal||'?'} → ${outVal||'open'} on ${displayDate(date)}`);
+};
+window.setMode=function(m){
+  document.getElementById('modeLive').className=`mode-btn${m==='live'?' active':''}`;
+  document.getElementById('modeManual').className=`mode-btn${m==='manual'?' active':''}`;
+  document.getElementById('manualCard').style.display=m==='manual'?'block':'none';
+};
+
+// ===== DAILY TAB =====
+window.renderDaily=function(){
+  const date=document.getElementById('dailyDate').value;if(!date)return;
+  const el=document.getElementById('dailyDateLabel');if(el)el.textContent=displayDate(date);
+  const ms=computeDayTotal(date),earn=calcEarnings(ms);
+  document.getElementById('dailyTotal').textContent=msToHHMM(ms);
+  document.getElementById('dailyTotalLbl').textContent=`Total hours — ${displayDate(date)}`;
+  document.getElementById('dailyEarnRow').innerHTML=earnHTML(earn);
+  renderSessionCards(getDayPairs(date),'dailySessions','dailyMsg');
+};
+
+// ===== WEEKLY TAB =====
+window.changeWeek=function(dir){weekStart.setDate(weekStart.getDate()+dir*7);renderWeekly();};
+function renderWeekly(){
+  const dates=getWeekDates(weekStart);
+  document.getElementById('weekLabel').textContent=getWeekLabel(weekStart);
+  let weekTotal=0;
+  const rows=dates.map(date=>{
+    const ms=computeDayTotal(date);weekTotal+=ms;
+    const earn=calcEarnings(ms);const pairs=getDayPairs(date);const has=pairs.length>0;
+    const miniPairs=pairs.map(p=>{
+      const dur=p.out?new Date(p.out.ts)-new Date(p.in.ts):new Date()-new Date(p.in.ts);
+      const inKey=p.in.firebaseKey||'';const outKey=p.out?.firebaseKey||'';
+      const d=p.in.date||'';const it=p.in.time||'';const ot=p.out?.time||'';
+      return`<div style="display:flex;gap:6px;font-size:11px;padding:6px 0;border-bottom:1px solid var(--border);align-items:center">
+        <div style="flex:1;text-align:center;color:#059669;font-weight:700">${it}</div>
+        <div style="flex:1;text-align:center;color:${p.out?'#DC2626':'#94A3B8'}">${ot||'active'}</div>
+        <div style="flex:1;text-align:center;color:var(--primary);font-weight:700">${msToHHMM(dur)}</div>
+        <button onclick="openEditModal('${inKey}','${outKey}','${d}','${it}','${ot}')" style="background:var(--primary);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-weight:700">✏️</button>
+        <button onclick="deletePairByKeys('${inKey}','${outKey}','')" style="background:#EF4444;border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-weight:700">🗑</button>
+      </div>`;
+    }).join('');
+    return`<div class="week-day-row" onclick="toggleWeekDay('wk-${date}')">
+      <div>
+        <div style="font-weight:700;font-size:13px;color:var(--text)">${shortDate(date)}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${has?pairs.length+' session'+(pairs.length!==1?'s':''):'No records'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="text-align:right">
+          <div style="font-weight:800;color:${has?'var(--primary)':'#CBD5E1'};font-size:14px">${msToHHMM(ms)}</div>
+          ${earn?`<div style="font-size:11px;color:#059669;font-weight:700">${currSym()}${earn.total.toFixed(2)}</div>`:''}
+        </div>
+        ${has?`<span style="color:var(--text-muted);font-size:14px">▼</span>`:''}
+      </div>
+    </div>
+    ${has?`<div id="wk-${date}" class="week-sessions">
+      <div style="display:flex;gap:6px;margin-bottom:6px;font-size:10px;font-weight:700;color:var(--text-muted)">
+        <div style="flex:1;text-align:center">IN</div><div style="flex:1;text-align:center">OUT</div>
+        <div style="flex:1;text-align:center">DURATION</div><div style="width:80px"></div>
+      </div>${miniPairs}</div>`:''}`;
+  }).join('');
+  const we=calcEarnings(weekTotal);
+  document.getElementById('weekTotal').textContent=msToHHMM(weekTotal);
+  document.getElementById('weekTotalLbl').textContent=`Total — ${getWeekLabel(weekStart)}`;
+  document.getElementById('weekEarnRow').innerHTML=earnHTML(we);
+  document.getElementById('weekDayList').innerHTML=`<div class="card-title">📅 Day-by-Day</div>${rows}
+    <div class="total-row">
+      <span style="font-weight:800;font-size:14px;color:var(--primary)">Week Total</span>
+      <div style="text-align:right">
+        <div style="font-weight:900;font-size:16px;color:var(--primary)">${msToHHMM(weekTotal)}</div>
+        ${we?`<div style="font-size:12px;color:#059669;font-weight:700">${currSym()}${we.total.toFixed(2)}</div>`:''}
+      </div>
+    </div>`;
+}
+window.toggleWeekDay=function(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');};
+
+// ===== MONTHLY TAB =====
+function renderMonthly(){
+  document.getElementById('monthLabel').textContent=getMonthLabel(monthFilter);
+  const days=[...new Set(records.filter(r=>r.date.startsWith(monthFilter)).map(r=>r.date))].sort();
+  let total=0;
+  const rows=days.map(date=>{
+    const ms=computeDayTotal(date);total+=ms;
+    const earn=calcEarnings(ms);const isOT=earn&&earn.otH>0;
+    return`<div class="day-row" onclick="jumpToDaily('${date}')">
+      <div>
+        <div style="font-weight:700;font-size:13px;color:var(--text)">${displayDate(date)}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${getDayPairs(date).length} session(s)${isOT?' · 🔶 OT':''} <span style="color:var(--primary)">· tap to view →</span></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800;color:var(--primary);font-size:14px">${msToHHMM(ms)}</div>
+        ${earn?`<div style="font-size:11px;color:#059669;font-weight:700">${currSym()}${earn.total.toFixed(2)}</div>`:''}
+      </div>
+    </div>`;
+  });
+  const me=calcEarnings(total);
+  document.getElementById('monthTotal').textContent=msToHHMM(total);
+  document.getElementById('monthTotalLbl').textContent=`Total hours — ${getMonthLabel(monthFilter)}`;
+  document.getElementById('monthEarnRow').innerHTML=earnHTML(me);
+  document.getElementById('monthDayList').innerHTML=days.length
+    ?`<div class="card-title">📅 Day-by-Day Breakdown</div>${rows.join('')}
+      <div class="total-row">
+        <span style="font-weight:800;font-size:14px;color:var(--primary)">Month Total</span>
+        <div style="text-align:right">
+          <div style="font-weight:900;font-size:16px;color:var(--primary)">${msToHHMM(total)}</div>
+          ${me?`<div style="font-size:12px;color:#059669;font-weight:700">${currSym()}${me.total.toFixed(2)}</div>`:''}
+        </div>
+      </div>`
+    :'<div class="no-sessions"><div class="no-sessions-icon">📭</div>No records for this month.</div>';
+}
+window.changeMonth=function(dir){
+  const[y,m]=monthFilter.split('-').map(Number);
+  const d=new Date(y,m-1+dir,1);
+  monthFilter=`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  renderMonthly();
+};
+window.jumpToDaily=function(date){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-daily').classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.getElementById('dailyDate').value=date;
+  currentTab='daily';
+  renderDaily();
+};
+
+// ===== SHARE =====
+function buildText(scope){
+  const sym=currSym();
+  const name=currentUser?.displayName?`Name: ${currentUser.displayName}\n`:'';
+  if(scope==='daily'){
+    const date=document.getElementById('dailyDate').value;
+    const ms=computeDayTotal(date);const earn=calcEarnings(ms);
+    let t=`📋 DAILY TIMESHEET — ${displayDate(date)}\n${name}`;
+    getDayPairs(date).forEach((p,i)=>{const d=p.out?new Date(p.out.ts)-new Date(p.in.ts):0;t+=`\nSession ${i+1}: ${p.in.time} → ${p.out?p.out.time:'active'} (${msToHHMM(d)})`;});
+    t+=`\n\nTotal: ${msToHHMM(ms)}`;if(earn)t+=`\nEarnings: ${sym}${earn.total.toFixed(2)}`;return t;
+  } else if(scope==='weekly'){
+    const dates=getWeekDates(weekStart);let total=0;
+    let t=`📋 WEEKLY TIMESHEET — ${getWeekLabel(weekStart)}\n${name}\n`;
+    dates.forEach(date=>{const ms=computeDayTotal(date);if(ms>0){total+=ms;t+=`\n${shortDate(date)}: ${msToHHMM(ms)}`;}});
+    const earn=calcEarnings(total);t+=`\n\nWeek Total: ${msToHHMM(total)}`;if(earn)t+=`\nEarnings: ${sym}${earn.total.toFixed(2)}`;return t;
+  } else {
+    const days=[...new Set(records.filter(r=>r.date.startsWith(monthFilter)).map(r=>r.date))].sort();
+    let total=0;let t=`📋 MONTHLY TIMESHEET — ${getMonthLabel(monthFilter)}\n${name}\n`;
+    days.forEach(date=>{const ms=computeDayTotal(date);total+=ms;t+=`\n${displayDate(date)}: ${msToHHMM(ms)}`;});
+    const earn=calcEarnings(total);t+=`\n\nTotal: ${msToHHMM(total)}`;if(earn)t+=`\nEarnings: ${sym}${earn.total.toFixed(2)}`;return t;
+  }
+}
+function doShare(title,text){if(navigator.share){navigator.share({title,text});}else{window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');}}
+window.shareDaily=()=>doShare('Daily Timesheet',buildText('daily'));
+window.shareWeekly=()=>doShare('Weekly Timesheet',buildText('weekly'));
+window.shareMonthly=()=>doShare('Monthly Timesheet',buildText('monthly'));
+
+// ===== SETTINGS =====
+function applySettingsUI(){
+  document.getElementById('settingRate').value=settings.hourlyRate||'';
+  document.getElementById('settingOT').value=settings.overtimeThreshold||8;
+  selectCurrency(settings.currency||'GBP');
+}
+window.selectCurrency=function(code){
+  ['GBP','USD','EUR','INR'].forEach(c=>{
+    document.getElementById(`cur-${c}`).className=`currency-option${c===code?' selected':''}`;
+    document.getElementById(`chk-${c}`).style.display=c===code?'inline':'none';
+  });
+  settings.currency=code;
+};
+window.saveSettings=function(){
+  settings.hourlyRate=document.getElementById('settingRate').value;
+  settings.overtimeThreshold=+document.getElementById('settingOT').value||8;
+  saveSettingsToStorage();
+  const msg=document.getElementById('settingsSavedMsg');
+  msg.style.display='flex';setTimeout(()=>msg.style.display='none',3000);
+};
+
+// ===== TABS =====
+window.showTab=function(name,el){
+  currentTab=name;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if(el)el.classList.add('active');
+  if(name==='daily'){document.getElementById('dailyDate').value=fmtDate(new Date());renderDaily();}
+  if(name==='weekly')renderWeekly();
+  if(name==='monthly')renderMonthly();
+  if(name==='settings')applySettingsUI();
+};
+function refreshCurrentTab(){
+  renderClockTab();
+  if(currentTab==='daily')renderDaily();
+  if(currentTab==='weekly')renderWeekly();
+  if(currentTab==='monthly')renderMonthly();
+}
+
+// ===== CLOCK DISPLAY =====
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clockDisplay').textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById('dateDisplay').textContent=displayDate(fmtDate(now));
+  if(!currentUser)return;
+  const status=getStatusForDate(fmtDate(now));
+  if(status==='in'){
+    const dr=records.filter(r=>r.date===fmtDate(now)).sort((a,b)=>a.ts>b.ts?1:-1);
+    const last=dr[dr.length-1];
+    if(last&&last.type==='in'&&!breakAlertShown){
+      if(new Date()-new Date(last.ts)>=6*3600000){breakAlertShown=true;alert('⚠️ Break Time! You have been working for over 6 hours. Please take a break!');}
+    }
+  } else {breakAlertShown=false;}
+}
+
+window.showMsg=function(id,type,text){
+  const el=document.getElementById(id);if(!el)return;
+  el.className=`msg msg-${type}`;el.textContent=text;
+  setTimeout(()=>{el.textContent='';el.className='';},5000);
+};
+
+setInterval(updateClock,1000);
+updateClock();
+</script>
+</body>
+</html>
