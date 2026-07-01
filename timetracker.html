@@ -526,21 +526,11 @@ window.signInWithGoogle = async function() {
   document.getElementById('loginContent').style.display = 'none';
   document.getElementById('loginLoading').style.display = 'block';
   try {
-    // Try popup first, fall back to redirect on mobile
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   } catch (error) {
-    if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-      try { await signInWithRedirect(auth, provider); }
-      catch(e) {
-        document.getElementById('loginLoading').style.display = 'none';
-        document.getElementById('loginContent').style.display = 'block';
-        alert('Sign in failed. Please try again.');
-      }
-    } else {
-      document.getElementById('loginLoading').style.display = 'none';
-      document.getElementById('loginContent').style.display = 'block';
-      alert('Sign in failed: ' + error.message);
-    }
+    document.getElementById('loginLoading').style.display = 'none';
+    document.getElementById('loginContent').style.display = 'block';
+    alert('Sign in failed: ' + error.message);
   }
 };
 
